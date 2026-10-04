@@ -1,4 +1,10 @@
 import type { NextConfig } from 'next';
+import { missingBuildEnv } from './src/lib/build-env';
+
+const missing = missingBuildEnv(process.env);
+if (missing.length > 0) {
+  throw new Error(`Build de produção sem ${missing.join(', ')}: passe como build args (veja .env.example).`);
+}
 
 const apiProxy = process.env.API_PROXY_URL;
 

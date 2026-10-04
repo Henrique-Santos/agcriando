@@ -10,6 +10,7 @@ import { errorMessage } from '@/lib/api/browser';
 import type { Product } from '@/lib/api/types';
 import { plural } from '@/lib/format';
 import { ConfirmDialog } from './ConfirmDialog';
+import { LoadError } from './LoadError';
 import { PriceInput } from './PriceInput';
 import { ProductEditor } from './ProductEditor';
 import { useToast } from './Toast';
@@ -60,7 +61,7 @@ export function ProductsPanel() {
         <div className="mr-auto">
           <h1 className="mb-[6px] text-[clamp(34px,4vw,48px)] tracking-[-0.02em]">Produtos</h1>
           <p className="text-base text-neutral-800">
-            {data ? `${plural(data.total, 'produto', 'produtos')} · ${data.activeCount} na loja` : 'Carregando catálogo…'}
+            {data ? `${plural(data.total, 'produto', 'produtos')} · ${data.activeCount} na loja` : products.isError ? '' : 'Carregando catálogo…'}
           </p>
         </div>
         <button type="button" className="btn btn-primary min-h-[46px] px-[20px] text-base" onClick={() => setEditing('new')}>
@@ -93,6 +94,10 @@ export function ProductsPanel() {
           ))}
         </div>
       </div>
+
+      {products.isError && !data && (
+        <LoadError message="Não foi possível carregar os produtos." onRetry={() => void products.refetch()} />
+      )}
 
       <div className={`${ROW} hidden border-b border-divider py-[10px] text-[11px] uppercase tracking-[0.08em] text-neutral-700 wide:grid`}>
         <span /><span>Produto</span><span>Categoria</span><span>Preço</span><span>Status</span><span />

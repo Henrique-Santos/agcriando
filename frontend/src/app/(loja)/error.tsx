@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 import { GENERIC_MESSAGE, waLink } from '@/lib/whatsapp';
 
-export default function StoreError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+// `retry` (Next 16.3) refaz a busca dos dados; `reset` só re-renderiza e não recupera de uma API fora do ar.
+export default function StoreError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => console.error(error), [error]);
 
   return (
@@ -12,7 +13,7 @@ export default function StoreError({ error, reset }: { error: Error & { digest?:
       <p className="text-[17px] text-neutral-800">
         Tente de novo em instantes. Se preferir, <a href={waLink(GENERIC_MESSAGE)} target="_blank" rel="noopener noreferrer">fale com a gente pelo WhatsApp</a>.
       </p>
-      <button type="button" className="btn btn-primary text-base" onClick={reset}>Tentar de novo</button>
+      <button type="button" className="btn btn-primary text-base" onClick={retry}>Tentar de novo</button>
     </section>
   );
 }

@@ -8,6 +8,7 @@ import { errorMessage } from '@/lib/api/browser';
 import type { AdminCategory } from '@/lib/api/types';
 import { plural } from '@/lib/format';
 import { ConfirmDialog } from './ConfirmDialog';
+import { LoadError } from './LoadError';
 import { useToast } from './Toast';
 
 export function CategoriesPanel() {
@@ -75,6 +76,9 @@ export function CategoriesPanel() {
       </form>
       {error && <p role="alert" className="mb-2 text-sm text-accent-2-700">{error}</p>}
 
+      {categories.isError && !categories.data && (
+        <LoadError message="Não foi possível carregar as categorias." onRetry={() => void categories.refetch()} />
+      )}
       <div className="mt-4">
         {list.map((category, i) => (
           <CategoryRow

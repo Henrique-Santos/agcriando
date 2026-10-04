@@ -97,4 +97,17 @@ describe('ProductsPanel', () => {
 
     await waitFor(() => expect(calls.some((c) => c.url.includes('status=off'))).toBe(true));
   });
+
+  it('shows an error with retry when the list fails to load', async () => {
+    let fail = true;
+    const { calls } = backend((c) => (c.url.startsWith('/api/admin/products?') && fail ? { status: 500, json: { title: 'Erro interno' } } : undefined));
+    renderWithQuery(<ProductsPanel />);
+
+    expect(await screen.findByText('Não foi possível carregar os produtos.')).toBeInTheDocument();
+    fail = false;
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+    expect(await screen.findByText('Caderno floral com nome')).toBeInTheDocument();
+    expect(calls.filter((c) => c.url.startsWith('/api/admin/products?')).length).toBeGreaterThan(1);
+  });
 });

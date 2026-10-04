@@ -1,15 +1,7 @@
 import type { Metadata } from 'next';
-import { Source_Serif_4 } from 'next/font/google';
 import { SITE_URL } from '@/lib/config';
+import { serif } from './fonts';
 import './globals.css';
-
-const serif = Source_Serif_4({
-  subsets: ['latin'],
-  weight: ['400', '600'],
-  style: ['normal', 'italic'],
-  variable: '--font-source-serif',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

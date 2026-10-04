@@ -46,4 +46,4 @@ pnpm dev                         # http://localhost:3000 (usa .env.development)
 - Loja: http://localhost:3000 · Painel: http://localhost:3000/admin (mesmo admin do backend)
 - Testes: `pnpm test` (unitários e de componentes) · `pnpm e2e` (Playwright; sobe API e front em portas próprias, usa o banco `agcriando_e2e`)
 - Tipos da API: `pnpm gen:api` depois de mudar endpoints (lê `backend/openapi/AgCriando.Api.json`, gerado no build do backend)
-- Variáveis: veja `frontend/.env.example`. Em produção, `API_PROXY_URL` fica vazia (o Nginx encaminha `/api`) e o build do Docker usa `NEXT_OUTPUT=standalone`.
+- Variáveis: veja `frontend/.env.example`. Em produção, `API_PROXY_URL` fica vazia (o Nginx encaminha `/api`) e o build do Docker usa `NEXT_OUTPUT=standalone`; nesse modo `NEXT_PUBLIC_SITE_URL` e `NEXT_PUBLIC_WHATSAPP` são obrigatórias como build args (são embutidas no build e o build falha sem elas).

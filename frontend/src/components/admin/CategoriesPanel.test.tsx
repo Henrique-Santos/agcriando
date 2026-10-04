@@ -81,4 +81,16 @@ describe('CategoriesPanel', () => {
 
     expect(push).toHaveBeenCalledWith('/admin/produtos?cat=cadernos');
   });
+
+  it('shows an error with retry instead of an empty list when loading fails', async () => {
+    let fail = true;
+    backend((c) => (c.url === '/api/admin/categories' && c.method === 'GET' && fail ? { status: 500, json: { title: 'Erro interno' } } : undefined));
+    renderWithQuery(<CategoriesPanel />);
+
+    expect(await screen.findByText('Não foi possível carregar as categorias.')).toBeInTheDocument();
+    fail = false;
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+    expect(await screen.findByDisplayValue('Cadernos')).toBeInTheDocument();
+  });
 });
