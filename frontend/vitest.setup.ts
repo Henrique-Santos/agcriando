@@ -12,7 +12,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  localStorage.clear();
+  globalThis.localStorage?.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
