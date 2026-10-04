@@ -1,8 +1,8 @@
 'use client';
 
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/browser';
-import type { AdminCategory, Me, ProductList } from '../api/types';
+import type { AdminCategory, Me, Product, ProductList } from '../api/types';
 
 export type ProductFilters = { q: string; cat: string; status: 'all' | 'on' | 'off' };
 
@@ -26,3 +26,33 @@ export const useCategories = () => useQuery({
 });
 
 export const useLogout = () => useMutation({ mutationFn: () => api<void>('/api/auth/logout', { method: 'POST' }) });
+
+type ProductPatch = { id: string; price?: number; active?: boolean; featured?: boolean };
+
+export function usePatchProduct() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...patch }: ProductPatch) =>
+      api<Product>(`/api/admin/products/${encodeURIComponent(id)}`, { method: 'PATCH', json: patch }),
+    onMutate: async ({ id, ...patch }) => {
+      await queryClient.cancelQueries({ queryKey: productKeys.all });
+      const previous = queryClient.getQueriesData<ProductList>({ queryKey: productKeys.all });
+      queryClient.setQueriesData<ProductList>({ queryKey: productKeys.all }, (old) =>
+        old && { ...old, items: old.items.map((p) => (p.id === id ? { ...p, ...patch } : p)) });
+      return { previous };
+    },
+    onError: (_error, _patch, context) => context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data)),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
+  });
+}
+
+export function useDeleteProduct() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/admin/products/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    onSuccess: () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: productKeys.all }),
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all }),
+    ]),
+  });
+}
