@@ -23,4 +23,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Seed\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

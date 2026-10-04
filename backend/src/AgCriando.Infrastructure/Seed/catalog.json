@@ -1,0 +1,469 @@
+{
+ "cats": [
+  {
+   "id": "cadernos",
+   "label": "Cadernos & planners"
+  },
+  {
+   "id": "canecas",
+   "label": "Canecas & potes"
+  },
+  {
+   "id": "bottons",
+   "label": "Bottons"
+  },
+  {
+   "id": "adesivos",
+   "label": "Adesivos & ímãs"
+  },
+  {
+   "id": "lembrancinhas",
+   "label": "Lembrancinhas"
+  },
+  {
+   "id": "decoracao",
+   "label": "Quadros & decoração"
+  },
+  {
+   "id": "bolsas",
+   "label": "Ecobags"
+  },
+  {
+   "id": "festa",
+   "label": "Topos de bolo"
+  },
+  {
+   "id": "digital",
+   "label": "Arquivos digitais"
+  }
+ ],
+ "products": [
+  {
+   "tag": "Mais pedido",
+   "min": null,
+   "opt": [
+    "Miolo",
+    [
+     "Pautado",
+     "Pontilhado",
+     "Sem pauta"
+    ]
+   ],
+   "id": "caderno-floral",
+   "name": "Caderno floral com nome",
+   "cat": "cadernos",
+   "price": 69.9,
+   "img": "img/caderno-emelli.jpeg",
+   "days": "5 a 7",
+   "desc": "Capa dura com estampa floral, espiral, elástico e tag com o nome. Miolo pautado com 96 folhas.",
+   "field": "Nome na capa",
+   "ph": "Ex.: Emelli",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "Novo",
+   "min": null,
+   "opt": [
+    "Tipo",
+    [
+     "Anual",
+     "Semestral"
+    ]
+   ],
+   "id": "planner-estudo",
+   "name": "Planner de estudo",
+   "cat": "cadernos",
+   "price": 89.9,
+   "img": "img/planner-estudo.jpeg",
+   "days": "7 a 10",
+   "desc": "Planner anual com divisórias, páginas de metas e planejamento semanal. Capa personalizada com seu nome e ano.",
+   "field": "Nome e ano",
+   "ph": "Ex.: Andreza · 2026/2027",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Miolo",
+    [
+     "Pautado",
+     "Pontilhado",
+     "Sem pauta"
+    ]
+   ],
+   "id": "caderno-livia",
+   "name": "Caderno rosa aquarela",
+   "cat": "cadernos",
+   "price": 64.9,
+   "img": "img/caderno-livia.jpeg",
+   "days": "5 a 7",
+   "desc": "Capa em tons de rosa aquarelado, com o nome em destaque e tag combinando.",
+   "field": "Nome na capa",
+   "ph": "Ex.: Lívia",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Miolo",
+    [
+     "Pautado",
+     "Pontilhado",
+     "Sem pauta"
+    ]
+   ],
+   "id": "caderno-lavanda",
+   "name": "Caderno campo de lavanda",
+   "cat": "cadernos",
+   "price": 69.9,
+   "img": "img/caderno-lavanda.jpeg",
+   "days": "5 a 7",
+   "desc": "Paisagem de flores lilases na capa, elástico e tag acrílica com o nome.",
+   "field": "Nome na tag",
+   "ph": "Ex.: Marcela",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Miolo",
+    [
+     "Pautado",
+     "Pontilhado",
+     "Sem pauta"
+    ]
+   ],
+   "id": "caderno-girassois",
+   "name": "Caderno Girassóis & céu estrelado",
+   "cat": "cadernos",
+   "price": 74.9,
+   "img": "img/caderno-girassois.jpeg",
+   "days": "5 a 7",
+   "desc": "Capa inspirada na pintura clássica, com acabamento holográfico e nome personalizado.",
+   "field": "Nome e frase",
+   "ph": "Ex.: Felicidade Eterna · Haide",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Miolo",
+    [
+     "Pautado",
+     "Pontilhado",
+     "Sem pauta"
+    ]
+   ],
+   "id": "caderno-marina",
+   "name": "Caderno floral com moldura",
+   "cat": "cadernos",
+   "price": 64.9,
+   "img": "img/caderno-marina.jpeg",
+   "days": "5 a 7",
+   "desc": "Estampa de flores em tons terrosos, moldura com o nome e tag coordenada.",
+   "field": "Nome na capa",
+   "ph": "Ex.: Marina",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Tamanho",
+    [
+     "A5",
+     "A4"
+    ]
+   ],
+   "id": "caderno-congresso",
+   "name": "Caderno de congresso",
+   "cat": "cadernos",
+   "price": 59.9,
+   "img": "img/caderno-felicidade.jpeg",
+   "days": "5 a 7",
+   "desc": "Capa com tema do congresso, borboletas e acabamento holográfico. Ótimo para presentear em quantidade.",
+   "field": "Nome e tema",
+   "ph": "Ex.: Felicidade eterna · Mirianyela",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "Mais pedido",
+   "min": null,
+   "opt": [
+    "Alça",
+    [
+     "Branca",
+     "Colorida"
+    ]
+   ],
+   "id": "caneca-princesa",
+   "name": "Caneca de porcelana ilustrada",
+   "cat": "canecas",
+   "price": 39.9,
+   "img": "img/caneca-princesa.jpeg",
+   "days": "3 a 5",
+   "desc": "Caneca de porcelana 325 ml com a ilustração que você escolher e o nome de quem vai ganhar.",
+   "field": "Nome ou frase",
+   "ph": "Ex.: Para a Sofia",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": null,
+   "id": "caneca-chopp",
+   "name": "Caneca de chopp jateada",
+   "cat": "canecas",
+   "price": 49.9,
+   "img": "img/caneca-chopp.jpeg",
+   "days": "5 a 7",
+   "desc": "Caneca de vidro jateado com arte personalizada. Presente certeiro para o Dia dos Pais e aniversários.",
+   "field": "Nome e título",
+   "ph": "Ex.: Paulo · Churrasqueiro",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": null,
+   "id": "pote-bambu",
+   "name": "Pote com tampa de bambu",
+   "cat": "canecas",
+   "price": 44.9,
+   "img": "img/pote-bambu.jpeg",
+   "days": "5 a 7",
+   "desc": "Pote de porcelana com tampa de bambu e puxador de coração. Personalizado com nome e tema.",
+   "field": "Nome e tema",
+   "ph": "Ex.: Raquel · Escola de Pioneiro 2026",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Mensagem",
+    [
+     "Autismo",
+     "TDAH",
+     "Alergia",
+     "Outra"
+    ]
+   ],
+   "id": "botton-autismo",
+   "name": "Botton de identificação",
+   "cat": "bottons",
+   "price": 6,
+   "img": "img/botton-autismo.jpeg",
+   "days": "3 a 5",
+   "desc": "Botton 5,5 cm com nome e mensagem de identificação — para mochilas, bolsas e crachás.",
+   "field": "Nome",
+   "ph": "Ex.: Scarlett",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "Em quantidade",
+   "min": 10,
+   "opt": [
+    "Cores",
+    [
+     "Sortidas",
+     "Uma cor só"
+    ]
+   ],
+   "id": "botton-jw",
+   "name": "Botton de evento",
+   "cat": "bottons",
+   "price": 4.5,
+   "img": "img/botton-jw.jpeg",
+   "days": "3 a 5",
+   "desc": "Bottons 4,5 cm em várias cores, ideais para eventos, congressos e grupos.",
+   "field": "Texto do botton",
+   "ph": "Ex.: JW.ORG",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "",
+   "min": 10,
+   "opt": null,
+   "id": "botton-frase",
+   "name": "Botton com frase",
+   "cat": "bottons",
+   "price": 5,
+   "img": "img/botton-cedo.jpeg",
+   "days": "3 a 5",
+   "desc": "Botton ilustrado com a frase ou o tema do seu evento.",
+   "field": "Frase",
+   "ph": "Ex.: Cedo no dia, cedo no mês…",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": 20,
+   "opt": null,
+   "id": "ima-frase",
+   "name": "Ímã com frase",
+   "cat": "adesivos",
+   "price": 3.5,
+   "img": "img/ima-frase.jpeg",
+   "days": "5 a 7",
+   "desc": "Ímã de geladeira 7×7 cm com a frase e o rodapé do seu evento.",
+   "field": "Frase e rodapé",
+   "ph": "Ex.: Cong. Rio Bonito · 2026",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Formato",
+    [
+     "Pasta",
+     "Cartela de adesivos"
+    ]
+   ],
+   "id": "adesivo-kpop",
+   "name": "Pasta ilustrada fã-clube",
+   "cat": "adesivos",
+   "price": 24.9,
+   "img": "img/pasta-kpop.jpeg",
+   "days": "3 a 5",
+   "desc": "Pasta com arte ilustrada do seu grupo favorito. Também disponível como cartela de adesivos.",
+   "field": "Tema",
+   "ph": "Ex.: seu grupo favorito",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": 10,
+   "opt": null,
+   "id": "kit-pioneiro",
+   "name": "Placa lembrança de escola",
+   "cat": "lembrancinhas",
+   "price": 12.9,
+   "img": "img/kit-pioneiro.jpeg",
+   "days": "7 a 10",
+   "desc": "Placa rígida ilustrada com o tema e o ano do curso. Lembrança para turmas e grupos.",
+   "field": "Tema e ano",
+   "ph": "Ex.: Escola de Pioneiro 2026",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": 20,
+   "opt": null,
+   "id": "folheto",
+   "name": "Cartão com envelope",
+   "cat": "lembrancinhas",
+   "price": 2.5,
+   "img": "img/folheto.jpeg",
+   "days": "3 a 5",
+   "desc": "Cartão dobrável ilustrado para lembrancinhas, convites ou mensagens.",
+   "field": "Mensagem da capa",
+   "ph": "Ex.: Seja feliz para sempre",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "Presente",
+   "min": null,
+   "opt": [
+    "Tamanho",
+    [
+     "20×20 cm",
+     "30×30 cm"
+    ]
+   ],
+   "id": "quadro-familia",
+   "name": "Quadro mosaico de fotos",
+   "cat": "decoracao",
+   "price": 59.9,
+   "img": "img/quadro-familia.jpeg",
+   "days": "5 a 7",
+   "desc": "Quadro com suas fotos formando um coração e a frase que quiser. Você envia as fotos pelo WhatsApp.",
+   "field": "Frase do quadro",
+   "ph": "Ex.: Família para todo sempre",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": null,
+   "id": "ecobag",
+   "name": "Ecobag pintada",
+   "cat": "bolsas",
+   "price": 34.9,
+   "img": "img/ecobag.jpeg",
+   "days": "5 a 7",
+   "desc": "Ecobag de algodão cru com estampa colorida. Escolha a arte ou envie a sua ideia.",
+   "field": "Nome ou frase",
+   "ph": "Ex.: Limoncello",
+   "active": true,
+   "featured": true
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Modelo",
+    [
+     "Simples",
+     "Com camadas 3D"
+    ]
+   ],
+   "id": "topo-bolo",
+   "name": "Topo de bolo personalizado",
+   "cat": "festa",
+   "price": 29.9,
+   "img": null,
+   "days": "5 a 7",
+   "desc": "Topo de bolo em papel especial com camadas, no tema e com o nome do aniversariante.",
+   "field": "Nome e idade",
+   "ph": "Ex.: Helena · 5 anos",
+   "active": true,
+   "featured": false
+  },
+  {
+   "tag": "",
+   "min": null,
+   "opt": [
+    "Formato",
+    [
+     "PDF",
+     "PNG"
+    ]
+   ],
+   "id": "arquivo-digital",
+   "name": "Arte digital para imprimir",
+   "cat": "digital",
+   "price": 19.9,
+   "img": null,
+   "days": "até 2",
+   "desc": "Você recebe o arquivo em PDF de alta resolução para imprimir onde quiser: convites, rótulos, tags.",
+   "field": "O que você precisa",
+   "ph": "Ex.: convite de aniversário",
+   "active": true,
+   "featured": false
+  }
+ ]
+}

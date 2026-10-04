@@ -44,8 +44,10 @@ public static class DependencyInjection
 
         services.AddOptions<SeedOptions>().BindConfiguration(SeedOptions.Section);
         services.AddScoped<ISeeder, IdentitySeeder>();
+        services.AddScoped<ISeeder, CatalogSeeder>();
 
-        services.AddSingleton<ICatalogCacheInvalidator, NoopCatalogCacheInvalidator>();
+        services.AddOptions<RevalidationOptions>().BindConfiguration(RevalidationOptions.Section);
+        services.AddHttpClient<ICatalogCacheInvalidator, HttpCatalogCacheInvalidator>(client => client.Timeout = TimeSpan.FromSeconds(5));
 
         services.AddOptions<StorageOptions>().BindConfiguration(StorageOptions.Section);
         services.AddSingleton<IImageProcessor, ImageSharpImageProcessor>();
