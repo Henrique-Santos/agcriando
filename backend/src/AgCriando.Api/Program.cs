@@ -10,6 +10,12 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Logging.ClearProviders();
+    builder.Logging.AddJsonConsole();
+}
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddApiServices();
@@ -17,8 +23,11 @@ builder.Services.AddApiAuth();
 
 var app = builder.Build();
 
-await app.Services.InitializeDatabaseAsync();
+// O gerador de OpenAPI do build executa o Program sem banco; só inicializa o banco em execução real.
+if (System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name != "GetDocument.Insider")
+    await app.Services.InitializeDatabaseAsync();
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
@@ -33,6 +42,9 @@ if (storage.IsLocal)
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
+
+if (app.Environment.IsDevelopment())
+    app.MapOpenApi();
 
 app.MapHealthChecks("/api/health");
 app.MapCatalogEndpoints();
