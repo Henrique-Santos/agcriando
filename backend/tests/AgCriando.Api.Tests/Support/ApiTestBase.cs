@@ -1,4 +1,7 @@
+using System.Net.Http.Json;
+using AgCriando.Infrastructure.Identity;
 using AgCriando.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AgCriando.Api.Tests.Support;
@@ -31,6 +34,28 @@ public abstract class ApiTestBase(PostgresFixture postgres) : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await seed(db);
         await db.SaveChangesAsync();
+    }
+
+    protected async Task<HttpClient> CreateAdminClientAsync() =>
+        await LoginAsync(ApiFactory.AdminEmail, ApiFactory.AdminPassword);
+
+    protected async Task<HttpClient> CreateUserClientAsync(string email, string password)
+    {
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<AdminUser>>();
+            var result = await users.CreateAsync(new AdminUser { UserName = email, Email = email }, password);
+            if (!result.Succeeded) throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
+        }
+        return await LoginAsync(email, password);
+    }
+
+    private async Task<HttpClient> LoginAsync(string email, string password)
+    {
+        var client = CreateClient();
+        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
+        response.EnsureSuccessStatusCode();
+        return client;
     }
 
     public async ValueTask DisposeAsync()
