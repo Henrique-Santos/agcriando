@@ -1,0 +1,125 @@
+name: agcriando
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: agcriando
+      POSTGRES_USER: agcriando
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agcriando -d agcriando"]
+      interval: 10s
+      retries: 10
+    deploy:
+      resources:
+        limits: { memory: 512m }
+
+  migrator:
+    image: ${MIGRATOR_IMAGE:?}
+    profiles: [tools]
+    depends_on:
+      db: { condition: service_healthy }
+    command: ["--connection", "Host=db;Database=agcriando;Username=agcriando;Password=${DB_PASSWORD}"]
+
+  api:
+    image: ${API_IMAGE:?}
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      ConnectionStrings__Default: Host=db;Database=agcriando;Username=agcriando;Password=${DB_PASSWORD}
+      Database__MigrateOnStartup: "false"
+      Seed__AdminEmail: ${ADMIN_EMAIL:?}
+      Seed__AdminPassword: ${ADMIN_PASSWORD:?}
+      Seed__Catalog: "true"
+      Storage__Provider: ${STORAGE_PROVIDER:-S3}
+      Storage__Bucket: ${MEDIA_BUCKET:-}
+      Storage__Region: ${AWS_REGION:-us-east-1}
+      Storage__PublicBaseUrl: ${MEDIA_BASE_URL:?}
+      Revalidation__Url: http://web:3000/api/revalidate
+      Revalidation__Secret: ${REVALIDATE_SECRET:?}
+    volumes:
+      - media:/app/media
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/api/health"]
+      interval: 15s
+      retries: 10
+      start_period: 20s
+    deploy:
+      resources:
+        limits: { memory: 400m }
+
+  web:
+    image: ${WEB_IMAGE:?}
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    environment:
+      API_INTERNAL_URL: http://api:8080
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/robots.txt"]
+      interval: 15s
+      retries: 10
+      start_period: 15s
+    deploy:
+      resources:
+        limits: { memory: 400m }
+
+  nginx:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    depends_on:
+      web: { condition: service_healthy }
+      api: { condition: service_healthy }
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?}
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    # Recarrega a cada 6 h para pegar certificados renovados.
+    command: ["/bin/sh", "-c", "while :; do sleep 6h; nginx -s reload; done & exec /docker-entrypoint.sh nginx -g 'daemon off;'"]
+    deploy:
+      resources:
+        limits: { memory: 64m }
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: ["/bin/sh", "-c", "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"]
+    deploy:
+      resources:
+        limits: { memory: 64m }
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD:?}
+      BACKUP_BUCKET: ${BACKUP_BUCKET:-}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      TZ: America/Manaus
+    volumes:
+      - ./backup:/scripts:ro
+      - ./backups:/backups
+    entrypoint: ["sh", "/scripts/entrypoint.sh"]
+    deploy:
+      resources:
+        limits: { memory: 128m }
+
+volumes:
+  pgdata: {}
+  media: {}

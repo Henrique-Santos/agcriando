@@ -1,0 +1,12 @@
+# Teste local da pilha de produção: builda as imagens e usa storage em disco (sem AWS).
+services:
+  migrator:
+    build: { context: ../backend, target: migrator }
+  api:
+    build: { context: ../backend, target: runtime }
+  web:
+    build:
+      context: ../frontend
+      args:
+        NEXT_PUBLIC_SITE_URL: https://localhost
+        NEXT_PUBLIC_WHATSAPP: "5592995185104"

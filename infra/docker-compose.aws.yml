@@ -1,0 +1,17 @@
+# Só na EC2: envia os logs dos containers para o CloudWatch Logs (/agcriando/prod).
+x-logging: &awslogs
+  driver: awslogs
+  options:
+    awslogs-region: ${AWS_REGION:?}
+    awslogs-group: /agcriando/prod
+    awslogs-create-group: "true"
+    tag: "{{.Name}}"
+
+services:
+  db: { logging: *awslogs }
+  api: { logging: *awslogs }
+  web: { logging: *awslogs }
+  nginx: { logging: *awslogs }
+  certbot: { logging: *awslogs }
+  backup: { logging: *awslogs }
+  migrator: { logging: *awslogs }
