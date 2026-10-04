@@ -50,7 +50,7 @@ public static class DependencyInjection
         services.AddHttpClient<ICatalogCacheInvalidator, HttpCatalogCacheInvalidator>(client => client.Timeout = TimeSpan.FromSeconds(5));
 
         services.AddOptions<StorageOptions>().BindConfiguration(StorageOptions.Section);
-        services.AddSingleton<IImageProcessor, ImageSharpImageProcessor>();
+        services.AddSingleton<IImageProcessor>(_ => new ImageSharpImageProcessor());
         services.AddSingleton<IImageStorage>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<StorageOptions>>();
