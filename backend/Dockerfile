@@ -18,6 +18,8 @@ RUN dotnet ef migrations bundle \
 
 # Executa as migrations: docker run agcriando-migrator --connection "Host=db;..."
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS migrator
+# O Npgsql carrega o GSSAPI ao conectar; sem a biblioteca o log mostra um erro (inofensivo).
+RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
 COPY --from=bundle /efbundle /efbundle
 USER $APP_UID
 ENTRYPOINT ["/efbundle"]
