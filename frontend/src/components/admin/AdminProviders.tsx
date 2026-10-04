@@ -6,6 +6,8 @@ import { ApiError } from '@/lib/api/browser';
 import { ToastProvider } from './Toast';
 
 const backToLoginOn401 = (error: unknown) => {
+  // Recarrega a página inteira para descartar o estado do painel quando a sessão expira.
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   if (error instanceof ApiError && error.status === 401) window.location.assign('/admin/login');
 };
 

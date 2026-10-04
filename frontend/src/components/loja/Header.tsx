@@ -45,9 +45,10 @@ export function Header() {
           })}
         </div>
 
-        <button type="button" className="btn btn-secondary" onClick={() => { close(); useCart.getState().setOpen(true); }}>
+        <button type="button" className="btn btn-secondary" aria-label="Minha lista" onClick={() => { close(); useCart.getState().setOpen(true); }}>
           <ShoppingBagOpen weight="duotone" size={18} />
-          <span>Minha lista</span>
+          {/* Abaixo de 700px o rótulo some para não sobrepor a marca; o ícone e o contador ficam. */}
+          <span className="hidden narrow:inline">Minha lista</span>
           {count > 0 && (
             <span className="inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-[10px] bg-accent-2 px-[6px] text-xs text-white">
               {count}

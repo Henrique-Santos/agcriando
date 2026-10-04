@@ -1,6 +1,6 @@
 # AG Criando Personalizados — loja online
 
-Monorepo da loja da AG Criando: `backend/` (API .NET 10), `frontend/` (Next.js — em construção), `infra/` (Docker/AWS) e `design/` (export do Claude Design — referência local, fora do git).
+Monorepo da loja da AG Criando: `backend/` (API .NET 10), `frontend/` (Next.js 16), `infra/` (Docker/AWS) e `design/` (export do Claude Design — referência local, fora do git).
 
 ## Backend
 
@@ -32,3 +32,18 @@ Na primeira execução em Development a API aplica as migrations, cria o admin `
 | `Storage__Bucket` / `Storage__Region` / `Storage__PublicBaseUrl` | bucket de fotos e URL pública |
 | `Revalidation__Url` / `Revalidation__Secret` | rota `/api/revalidate` do Next e segredo compartilhado |
 | `RateLimiting__LoginPermitLimit` | tentativas de login por minuto por IP (padrão 10) |
+
+## Frontend
+
+Pré-requisitos: Node.js 20.9+ e pnpm. Com o backend rodando (seção acima):
+
+```bash
+cd frontend
+pnpm install
+pnpm dev                         # http://localhost:3000 (usa .env.development)
+```
+
+- Loja: http://localhost:3000 · Painel: http://localhost:3000/admin (mesmo admin do backend)
+- Testes: `pnpm test` (unitários e de componentes) · `pnpm e2e` (Playwright; sobe API e front em portas próprias, usa o banco `agcriando_e2e`)
+- Tipos da API: `pnpm gen:api` depois de mudar endpoints (lê `backend/openapi/AgCriando.Api.json`, gerado no build do backend)
+- Variáveis: veja `frontend/.env.example`. Em produção, `API_PROXY_URL` fica vazia (o Nginx encaminha `/api`) e o build do Docker usa `NEXT_OUTPUT=standalone`.

@@ -72,6 +72,8 @@
 }
 
 @layer base {
+  /* O design usa a entrelinha padrão do navegador; o preflight do Tailwind força 1.5. */
+  html { line-height: normal; }
   body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); overflow-x: clip; }
   h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 600; }
   a { color: var(--color-accent-700); }
