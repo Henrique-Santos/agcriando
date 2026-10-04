@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using AgCriando.Infrastructure.Persistence;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -7,6 +8,8 @@ public static class ApiServices
 {
     public static IServiceCollection AddApiServices(this IServiceCollection services)
     {
+        // Números só como números: o contrato OpenAPI fica `number`, não `number | string`.
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
         services.AddProblemDetails();
         services.AddExceptionHandler<ApiExceptionHandler>();
         services.AddHealthChecks().AddDbContextCheck<AppDbContext>();

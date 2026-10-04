@@ -79,6 +79,17 @@ public sealed class ProductEndpointTests(PostgresFixture postgres) : ApiTestBase
     }
 
     [Fact]
+    public async Task Price_sent_as_string_is_rejected()
+    {
+        var admin = await AdminWithCategoryAsync();
+
+        var response = await admin.PostAsync("/api/admin/products", new StringContent(
+            """{"name":"Caneca","categoryId":"canecas","price":"39.9"}""", Encoding.UTF8, "application/json"));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task Hiding_product_removes_it_from_public_catalog()
     {
         var admin = await AdminWithCategoryAsync();
