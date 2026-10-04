@@ -23,7 +23,7 @@ describe('browser api client', () => {
   it('turns ProblemDetails into ApiError with the first message per field', async () => {
     mockFetch(() => ({ status: 400, json: { title: 'Confira os campos destacados.', errors: { name: ['Dê um nome ao produto.', 'outro'] } } }));
 
-    const error = await api('/api/admin/products', { method: 'POST', json: {} }).catch((e: unknown) => e as ApiError);
+    const error = (await api('/api/admin/products', { method: 'POST', json: {} }).catch((e: unknown) => e)) as ApiError;
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.status).toBe(400);
