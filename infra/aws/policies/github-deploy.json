@@ -1,0 +1,10 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    { "Sid": "EcrAuth", "Effect": "Allow", "Action": "ecr:GetAuthorizationToken", "Resource": "*" },
+    { "Sid": "EcrPush", "Effect": "Allow", "Action": ["ecr:BatchCheckLayerAvailability", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload", "ecr:PutImage", "ecr:BatchGetImage"], "Resource": "arn:aws:ecr:__REGION__:__ACCOUNT__:repository/agcriando-*" },
+    { "Sid": "Artifacts", "Effect": "Allow", "Action": "s3:PutObject", "Resource": "arn:aws:s3:::__BACKUP_BUCKET__/artifacts/*" },
+    { "Sid": "SendCommand", "Effect": "Allow", "Action": "ssm:SendCommand", "Resource": ["arn:aws:ec2:__REGION__:__ACCOUNT__:instance/__INSTANCE__", "arn:aws:ssm:__REGION__::document/AWS-RunShellScript"] },
+    { "Sid": "CommandStatus", "Effect": "Allow", "Action": "ssm:GetCommandInvocation", "Resource": "*" }
+  ]
+}

@@ -2,6 +2,8 @@
 
 Monorepo da loja da AG Criando: `backend/` (API .NET 10), `frontend/` (Next.js 16), `infra/` (Docker/AWS) e `design/` (export do Claude Design — referência local, fora do git).
 
+- Infra e deploy: veja [infra/README.md](infra/README.md).
+
 ## Backend
 
 Pré-requisitos: .NET SDK 10.0.104+ e Docker.
