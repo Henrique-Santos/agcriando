@@ -25,6 +25,7 @@ app.UseRateLimiter();
 app.MapHealthChecks("/api/health");
 app.MapCatalogEndpoints();
 app.MapAuthEndpoints();
+app.MapAdminEndpoints();
 
 app.Run();
 
