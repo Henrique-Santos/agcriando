@@ -12,6 +12,7 @@ public static class AdminEndpoints
 
         admin.MapCategoryEndpoints();
         admin.MapProductEndpoints();
+        admin.MapUploadEndpoints();
 
         return app;
     }
