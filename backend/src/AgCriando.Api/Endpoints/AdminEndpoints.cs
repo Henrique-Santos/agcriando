@@ -11,6 +11,7 @@ public static class AdminEndpoints
             .AddEndpointFilter<RequireXRequestedWithFilter>();
 
         admin.MapCategoryEndpoints();
+        admin.MapProductEndpoints();
 
         return app;
     }
