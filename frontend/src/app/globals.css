@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/* Tokens do Broadsheet (design/styles.css). `static` emite todas as variáveis, inclusive
+   as usadas só pela camada de componentes abaixo. */
+@theme static {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #0088b0;
+  --color-accent-2: #d6006c;
+  --color-divider: color-mix(in srgb, #201e1d 16%, transparent);
+
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #e9f8ff;
+  --color-accent-200: #cbeeff;
+  --color-accent-300: #99e0ff;
+  --color-accent-400: #62c5ee;
+  --color-accent-500: #38a6cf;
+  --color-accent-600: #1186ac;
+  --color-accent-700: #006786;
+  --color-accent-800: #004961;
+  --color-accent-900: #0a303e;
+
+  --color-accent-2-100: #fff1f4;
+  --color-accent-2-200: #ffdee6;
+  --color-accent-2-300: #ffc0d0;
+  --color-accent-2-400: #ff90b1;
+  --color-accent-2-500: #ff458e;
+  --color-accent-2-600: #d82071;
+  --color-accent-2-700: #aa0b56;
+  --color-accent-2-800: #790e3d;
+  --color-accent-2-900: #4b1528;
+
+  --font-heading: var(--font-source-serif), system-ui, sans-serif;
+  --font-body: var(--font-source-serif), system-ui, sans-serif;
+
+  /* Escala de espaçamento do design (densidade 1.25×): p-1=5px … p-8=40px. */
+  --spacing: 5px;
+
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+
+  --breakpoint-narrow: 700px;
+  --breakpoint-desktop: 1040px;
+  --breakpoint-wide: 1080px;
+
+  --animate-fade: agc-fade 0.2s;
+  --animate-slide-in: agc-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-up: agc-up 0.2s;
+
+  @keyframes agc-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes agc-in { from { transform: translateX(100%); } to { transform: none; } }
+  @keyframes agc-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}
+
+@utility bg-stripes {
+  background: repeating-linear-gradient(135deg, var(--color-neutral-200) 0 8px, var(--color-neutral-100) 8px 16px);
+}
+
+@layer base {
+  body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); overflow-x: clip; }
+  h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 600; }
+  a { color: var(--color-accent-700); }
+  a:hover { color: var(--color-accent-600); }
+  button { cursor: pointer; font-family: inherit; }
+  button:disabled { cursor: not-allowed; }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  ::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+  input[type="checkbox"] { accent-color: var(--color-accent); width: 18px; height: 18px; margin: 0; }
+}
+
+/* Camada de componentes do Broadsheet, copiada de design/styles.css. */
+@layer components {
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; text-decoration: none; white-space: nowrap; flex-shrink: 0;
+    font-family: var(--font-heading); font-weight: 600;
+    font-size: 14px; line-height: 1.2; color: var(--color-text);
+    background: transparent; border: 1px solid transparent;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+  }
+  .btn:hover { color: var(--color-text); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary, .btn-primary:hover { background: var(--color-accent); color: var(--color-bg); }
+  .btn-primary:hover { background: var(--color-accent-600); }
+  .btn-primary:active { background: var(--color-accent-700); }
+  .btn-secondary { border-color: var(--color-divider); }
+  .btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+  .btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }
+  .btn-ghost, .btn-ghost:hover { color: var(--color-accent); padding-inline: 5px; }
+  .btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+  .btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+  .btn-icon { width: 36px; height: 36px; padding: 0; }
+
+  .field > label { display: block; font-size: 12px; margin-bottom: 5px; color: color-mix(in srgb, var(--color-text) 70%, transparent); }
+  .input {
+    width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+    font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+  }
+  .input::placeholder { color: color-mix(in srgb, var(--color-text) 65%, transparent); opacity: 1; }
+  .input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+  .input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+  textarea.input { min-height: 90px; resize: vertical; }
+
+  .seg { display: inline-flex; overflow: hidden; border: 1px solid var(--color-divider); border-radius: var(--radius-md); }
+  .seg-opt { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
+  .seg-opt input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+  .seg-opt + .seg-opt { border-left: 1px solid var(--color-divider); }
+  .seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+  .seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+  .seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+  .tag { display: inline-flex; align-items: center; font-size: 11px; letter-spacing: 0.02em; padding: 3px 10px; border-radius: 1.5px; }
+  .tag-accent { background: var(--color-accent-100); color: var(--color-accent-800); }
+  .tag-accent-2 { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+  .tag-neutral { background: var(--color-neutral-100); color: var(--color-neutral-800); }
+
+  .dialog-backdrop {
+    position: fixed; inset: 0; display: grid; place-items: center; padding: 20px;
+    background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+  }
+  .dialog {
+    width: min(440px, 100%); display: flex; flex-direction: column; gap: 15px;
+    padding: 20px; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-lg);
+  }
+  .dialog-title { font-family: var(--font-heading); font-weight: 600; font-size: 20px; }
+  .dialog-body { font-size: 14px; opacity: 0.85; }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+}
