@@ -100,7 +100,7 @@ services:
     entrypoint: ["/bin/sh", "-c", "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"]
     deploy:
       resources:
-        limits: { memory: 64m }
+        limits: { memory: 128m }
 
   backup:
     image: postgres:17-alpine

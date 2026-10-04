@@ -35,11 +35,19 @@ $C down
 3. Se a conta tiver *Block Public Access* ligado no nível da conta, libere políticas públicas (`aws s3control put-public-access-block --account-id <conta> --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=false`) — o bucket de mídia precisa servir `products/*`.
 4. `./aws/provision.sh` — imprime o Elastic IP, as variáveis do GitHub e como ler a senha do admin.
 5. **DNS:** registro `A` do domínio → Elastic IP. Aguarde propagar (`dig +short <domínio>`).
-6. **GitHub:** Settings → Environments → `production` → crie as variáveis impressas no passo 4.
-7. **Primeiro deploy:** faça push na `main` (ou *Re-run* do workflow Deploy). O primeiro deploy sobe com certificado provisório.
-8. **Certificado real** (via Session Manager): `aws ssm start-session --target <instância>` e depois
+6. **GitHub:** Settings → Environments → `production`:
+   - crie as variáveis impressas no passo 4;
+   - em *Deployment branches*, permita só a `main` (a role da AWS confia no environment `production`; sem essa regra, qualquer branch que declare o environment poderia fazer deploy).
+7. **Primeiro deploy:** faça push na `main` (ou *Re-run* do workflow Deploy). Numa instância nova o `deploy.sh` cria um certificado provisório para o Nginx subir; o health check do deploy é feito na própria máquina, então não depende de DNS nem do certificado definitivo.
+8. **Certificado real**, depois que o DNS apontar para o Elastic IP (via Session Manager):
+   `aws ssm start-session --target <instância>` e depois
    `cd /opt/agcriando && sudo ./scripts/init-letsencrypt.sh <domínio> <email>`.
+   Pode ser reexecutado com segurança: se o certbot falhar (DNS ainda não propagado, por exemplo), o provisório volta e o site continua no ar; se o certificado definitivo já existir, nada é feito.
 9. `./scripts/smoke.sh https://<domínio>` da sua máquina.
+
+> O alarme `agcriando-health` dispara entre o provisionamento e o primeiro deploy bem-sucedido (ainda não há aplicação respondendo). É esperado.
+
+**Custo estimado (us-east-1):** EC2 `t4g.small` ~US$ 12 + IPv4 público/Elastic IP ~US$ 3,60 + EBS 20 GB ~US$ 1,60 + S3, ECR, CloudWatch e alarmes ~US$ 1–2 ≈ **US$ 18–20/mês**.
 
 ## Operação
 
