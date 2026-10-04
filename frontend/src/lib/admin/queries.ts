@@ -78,3 +78,51 @@ export const useUploadImage = () => useMutation({
     return api<UploadedImage>('/api/admin/uploads', { method: 'POST', body });
   },
 });
+function useInvalidateCategories() {
+  const queryClient = useQueryClient();
+  return () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: categoryKeys.all }),
+    queryClient.invalidateQueries({ queryKey: productKeys.all }),
+  ]);
+}
+
+export function useCreateCategory() {
+  const invalidate = useInvalidateCategories();
+  return useMutation({
+    mutationFn: (label: string) => api<AdminCategory>('/api/admin/categories', { method: 'POST', json: { label } }),
+    onSuccess: invalidate,
+  });
+}
+
+export function useRenameCategory() {
+  const invalidate = useInvalidateCategories();
+  return useMutation({
+    mutationFn: ({ id, label }: { id: string; label: string }) =>
+      api<AdminCategory>(`/api/admin/categories/${encodeURIComponent(id)}`, { method: 'PUT', json: { label } }),
+    onSuccess: invalidate,
+  });
+}
+
+export function useReorderCategories() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => api<void>('/api/admin/categories/order', { method: 'PUT', json: { ids } }),
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: categoryKeys.all });
+      const previous = queryClient.getQueryData<AdminCategory[]>(categoryKeys.all);
+      queryClient.setQueryData<AdminCategory[]>(categoryKeys.all, (old) =>
+        old && ids.map((id, i) => ({ ...old.find((c) => c.id === id)!, sortOrder: i })));
+      return { previous };
+    },
+    onError: (_e, _ids, context) => queryClient.setQueryData(categoryKeys.all, context?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: categoryKeys.all }),
+  });
+}
+
+export function useDeleteCategory() {
+  const invalidate = useInvalidateCategories();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/admin/categories/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    onSuccess: invalidate,
+  });
+}
