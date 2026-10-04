@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+**/TestResults/
+src/AgCriando.Api/media/
+src/AgCriando.Api/media-e2e/
+tests/
+openapi/
