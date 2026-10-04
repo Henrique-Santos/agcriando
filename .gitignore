@@ -11,3 +11,10 @@ Thumbs.db
 
 # Specs e planos locais (não versionar)
 docs/superpowers/
+
+# .NET
+bin/
+obj/
+*.user
+TestResults/
+backend/src/AgCriando.Api/media/

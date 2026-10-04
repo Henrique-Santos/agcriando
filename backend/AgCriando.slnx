@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AgCriando.Api/AgCriando.Api.csproj" />
+    <Project Path="src/AgCriando.Application/AgCriando.Application.csproj" />
+    <Project Path="src/AgCriando.Domain/AgCriando.Domain.csproj" />
+    <Project Path="src/AgCriando.Infrastructure/AgCriando.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AgCriando.Api.Tests/AgCriando.Api.Tests.csproj" />
+    <Project Path="tests/AgCriando.Application.Tests/AgCriando.Application.Tests.csproj" />
+    <Project Path="tests/AgCriando.Domain.Tests/AgCriando.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
