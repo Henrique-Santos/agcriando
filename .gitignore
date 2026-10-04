@@ -23,3 +23,6 @@ backend/src/AgCriando.Api/media/
 # Export do Claude Design (referência local, não versionar)
 design/
 backend/src/AgCriando.Api/media-e2e/
+infra/certbot/
+infra/.env
+infra/backups/
