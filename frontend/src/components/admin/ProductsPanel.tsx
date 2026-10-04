@@ -11,6 +11,7 @@ import type { Product } from '@/lib/api/types';
 import { plural } from '@/lib/format';
 import { ConfirmDialog } from './ConfirmDialog';
 import { PriceInput } from './PriceInput';
+import { ProductEditor } from './ProductEditor';
 import { useToast } from './Toast';
 
 const STATUS: { value: ProductFilters['status']; label: string }[] = [
@@ -142,7 +143,14 @@ export function ProductsPanel() {
           onCancel={() => setDeleting(null)}
         />
       )}
-      {editing && null /* ProductEditor entra na Task 15 */}
+      {editing && (
+        <ProductEditor
+          product={editing === 'new' ? null : editing}
+          categories={categories.data ?? []}
+          defaultCategoryId={filters.cat !== 'all' ? filters.cat : undefined}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </section>
   );
 }

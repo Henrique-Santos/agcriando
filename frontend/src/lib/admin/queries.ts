@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/browser';
-import type { AdminCategory, Me, Product, ProductList } from '../api/types';
+import type { AdminCategory, Me, Product, ProductInput, ProductList, UploadedImage } from '../api/types';
 
 export type ProductFilters = { q: string; cat: string; status: 'all' | 'on' | 'off' };
 
@@ -56,3 +56,25 @@ export function useDeleteProduct() {
     ]),
   });
 }
+
+export function useSaveProduct() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id?: string; input: ProductInput }) =>
+      id
+        ? api<Product>(`/api/admin/products/${encodeURIComponent(id)}`, { method: 'PUT', json: input })
+        : api<Product>('/api/admin/products', { method: 'POST', json: input }),
+    onSuccess: () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: productKeys.all }),
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all }),
+    ]),
+  });
+}
+
+export const useUploadImage = () => useMutation({
+  mutationFn: (file: File) => {
+    const body = new FormData();
+    body.append('file', file);
+    return api<UploadedImage>('/api/admin/uploads', { method: 'POST', body });
+  },
+});
