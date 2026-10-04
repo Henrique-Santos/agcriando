@@ -10,6 +10,7 @@ Thumbs.db
 !.env.example
 
 # Specs e planos locais (não versionar)
+.superpowers/
 docs/superpowers/
 
 # .NET
@@ -18,3 +19,6 @@ obj/
 *.user
 TestResults/
 backend/src/AgCriando.Api/media/
+
+# Export do Claude Design (referência local, não versionar)
+design/

@@ -1,6 +1,6 @@
 # AG Criando Personalizados — loja online
 
-Monorepo da loja da AG Criando: `backend/` (API .NET 10), `frontend/` (Next.js — em construção), `infra/` (Docker/AWS) e `design/` (export do Claude Design, só referência).
+Monorepo da loja da AG Criando: `backend/` (API .NET 10), `frontend/` (Next.js — em construção), `infra/` (Docker/AWS) e `design/` (export do Claude Design — referência local, fora do git).
 
 ## Backend
 
