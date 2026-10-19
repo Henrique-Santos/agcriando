@@ -17,6 +17,8 @@ internal sealed class S3ImageStorage(IAmazonS3 s3, IOptions<StorageOptions> opti
             Key = key,
             InputStream = stream,
             ContentType = contentType,
+            // Upload por HTTPS; o R2 não aceita payload assinado em streaming.
+            DisablePayloadSigning = true,
         };
         request.Headers.CacheControl = "public, max-age=31536000, immutable";
 

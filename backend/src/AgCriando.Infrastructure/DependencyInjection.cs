@@ -5,7 +5,6 @@ using AgCriando.Infrastructure.Images;
 using AgCriando.Infrastructure.Persistence;
 using AgCriando.Infrastructure.Seeding;
 using AgCriando.Infrastructure.Storage;
-using Amazon;
 using Amazon.S3;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -56,8 +55,8 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<IOptions<StorageOptions>>();
             return options.Value.IsLocal
                 ? ActivatorUtilities.CreateInstance<LocalImageStorage>(sp)
-                // Credenciais pela cadeia padrão da AWS (IAM Role da instância em produção).
-                : new S3ImageStorage(new AmazonS3Client(RegionEndpoint.GetBySystemName(options.Value.Region)), options);
+                // Credenciais pela cadeia padrão do SDK (AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY no container).
+                : new S3ImageStorage(new AmazonS3Client(S3ClientFactory.CreateConfig(options.Value)), options);
         });
 
         return services;
