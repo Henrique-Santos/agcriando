@@ -1,6 +1,6 @@
 # AG Criando Personalizados — loja online
 
-Monorepo da loja da AG Criando: `backend/` (API .NET 10), `frontend/` (Next.js 16), `infra/` (Docker/AWS) e `design/` (export do Claude Design — referência local, fora do git).
+Monorepo da loja da AG Criando: `backend/` (API .NET 10), `frontend/` (Next.js 16), `infra/` (Docker; produção na Oracle Cloud + Cloudflare) e `design/` (export do Claude Design — referência local, fora do git).
 
 - Infra e deploy: veja [infra/README.md](infra/README.md).
 
@@ -30,8 +30,9 @@ Na primeira execução em Development a API aplica as migrations, cria o admin `
 | `Database__MigrateOnStartup` | `false` em produção (migrations via bundle no deploy) |
 | `Seed__AdminEmail` / `Seed__AdminPassword` | admin inicial (criado só se não existir) |
 | `Seed__Catalog` | importa o catálogo de exemplo em banco vazio |
-| `Storage__Provider` | `S3` ou `Local` |
-| `Storage__Bucket` / `Storage__Region` / `Storage__PublicBaseUrl` | bucket de fotos e URL pública |
+| `Storage__Provider` | `S3` (qualquer storage compatível, ex.: Cloudflare R2) ou `Local` |
+| `Storage__Bucket` / `Storage__Region` / `Storage__ServiceUrl` / `Storage__PublicBaseUrl` | bucket de fotos, região (`auto` no R2), endpoint S3 compatível (vazio = AWS) e URL pública |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | credenciais do bucket (token do R2) |
 | `Revalidation__Url` / `Revalidation__Secret` | rota `/api/revalidate` do Next e segredo compartilhado |
 | `RateLimiting__LoginPermitLimit` | tentativas de login por minuto por IP (padrão 10) |
 
