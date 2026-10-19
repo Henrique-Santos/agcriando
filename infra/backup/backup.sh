@@ -1,5 +1,5 @@
 #!/bin/sh
-# Dump do Postgres em formato custom (comprimido). Destino: S3 se BACKUP_BUCKET existir, senão /backups.
+# Dump do Postgres em formato custom (comprimido). Destino: bucket S3/R2 se BACKUP_BUCKET existir, senão /backups.
 set -eu
 
 : "${DB_PASSWORD:?DB_PASSWORD obrigatório}"
