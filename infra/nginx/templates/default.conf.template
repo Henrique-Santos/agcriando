@@ -4,26 +4,22 @@ server_tokens off;
 # com outro IP, o proxy acompanha sem precisar de reload.
 resolver 127.0.0.11 valid=10s ipv6=off;
 
-server {
-  listen 80;
-  server_name ${DOMAIN} www.${DOMAIN};
-
-  location /.well-known/acme-challenge/ { root /var/www/certbot; }
-  location / { return 301 https://${DOMAIN}$request_uri; }
+# O Nginx só é alcançável pelo cloudflared (porta publicada em 127.0.0.1). Os cabeçalhos da Cloudflare
+# trazem o IP real do cliente e o esquema original (o TLS termina na Cloudflare).
+# Sem eles (teste local), vale a conexão direta.
+map $http_cf_connecting_ip $client_ip {
+  ""      $remote_addr;
+  default $http_cf_connecting_ip;
+}
+map $http_x_forwarded_proto $client_proto {
+  ""      $scheme;
+  default $http_x_forwarded_proto;
 }
 
 server {
-  listen 443 ssl;
-  http2 on;
-  server_name ${DOMAIN};
+  listen 80;
+  server_name ${DOMAIN} localhost 127.0.0.1;
 
-  ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
-  ssl_protocols TLSv1.2 TLSv1.3;
-  ssl_session_cache shared:SSL:10m;
-  ssl_session_timeout 1d;
-
-  add_header Strict-Transport-Security "max-age=31536000" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
@@ -36,9 +32,10 @@ server {
 
   proxy_http_version 1.1;
   proxy_set_header Host $host;
-  proxy_set_header X-Real-IP $remote_addr;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_set_header X-Real-IP $client_ip;
+  # Um único IP: a API usa o último da lista (ForwardLimit = 1).
+  proxy_set_header X-Forwarded-For $client_ip;
+  proxy_set_header X-Forwarded-Proto $client_proto;
 
   set $api_upstream http://api:8080;
   set $web_upstream http://web:3000;

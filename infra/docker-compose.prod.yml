@@ -1,7 +1,13 @@
 name: agcriando
 
+# Logs no disco da VM, com rotação (docker compose logs <serviço>).
+x-logging: &logs
+  driver: json-file
+  options: { max-size: 10m, max-file: "5" }
+
 services:
   db:
+    logging: *logs
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
@@ -19,6 +25,7 @@ services:
         limits: { memory: 512m }
 
   migrator:
+    logging: *logs
     image: ${MIGRATOR_IMAGE:?}
     profiles: [tools]
     depends_on:
@@ -26,6 +33,7 @@ services:
     command: ["--connection", "Host=db;Database=agcriando;Username=agcriando;Password=${DB_PASSWORD}"]
 
   api:
+    logging: *logs
     image: ${API_IMAGE:?}
     restart: unless-stopped
     depends_on:
@@ -38,8 +46,11 @@ services:
       Seed__Catalog: "true"
       Storage__Provider: ${STORAGE_PROVIDER:-S3}
       Storage__Bucket: ${MEDIA_BUCKET:-}
-      Storage__Region: ${AWS_REGION:-us-east-1}
+      Storage__Region: auto
+      Storage__ServiceUrl: ${R2_ENDPOINT:-}
       Storage__PublicBaseUrl: ${MEDIA_BASE_URL:?}
+      AWS_ACCESS_KEY_ID: ${MEDIA_R2_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${MEDIA_R2_SECRET_ACCESS_KEY:-}
       Revalidation__Url: http://web:3000/api/revalidate
       Revalidation__Secret: ${REVALIDATE_SECRET:?}
     volumes:
@@ -54,6 +65,7 @@ services:
         limits: { memory: 400m }
 
   web:
+    logging: *logs
     image: ${WEB_IMAGE:?}
     restart: unless-stopped
     depends_on:
@@ -71,38 +83,25 @@ services:
         limits: { memory: 400m }
 
   nginx:
+    logging: *logs
     image: nginx:1.29-alpine
     restart: unless-stopped
     depends_on:
       web: { condition: service_healthy }
       api: { condition: service_healthy }
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:8080:80"   # só o cloudflared (no host) acessa
     environment:
       DOMAIN: ${DOMAIN:?}
     volumes:
       - ./nginx/templates:/etc/nginx/templates:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
-    # Recarrega a cada 6 h para pegar certificados renovados.
-    command: ["/bin/sh", "-c", "while :; do sleep 6h; nginx -s reload; done & exec /docker-entrypoint.sh nginx -g 'daemon off;'"]
     deploy:
       resources:
         limits: { memory: 64m }
 
-  certbot:
-    image: certbot/certbot:latest
-    restart: unless-stopped
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: ["/bin/sh", "-c", "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"]
-    deploy:
-      resources:
-        limits: { memory: 128m }
 
   backup:
+    logging: *logs
     image: postgres:17-alpine
     restart: unless-stopped
     depends_on:
@@ -110,7 +109,9 @@ services:
     environment:
       DB_PASSWORD: ${DB_PASSWORD:?}
       BACKUP_BUCKET: ${BACKUP_BUCKET:-}
-      AWS_REGION: ${AWS_REGION:-us-east-1}
+      R2_ENDPOINT: ${R2_ENDPOINT:-}
+      AWS_ACCESS_KEY_ID: ${BACKUP_R2_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_R2_SECRET_ACCESS_KEY:-}
       TZ: America/Manaus
     volumes:
       - ./backup:/scripts:ro
