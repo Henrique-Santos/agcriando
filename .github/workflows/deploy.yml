@@ -90,11 +90,15 @@ jobs:
           BACKUP_R2_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
           BACKUP_R2_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
         run: |
-          for v in DOMAIN ADMIN_EMAIL MEDIA_BUCKET MEDIA_BASE_URL BACKUP_BUCKET R2_ENDPOINT DB_PASSWORD ADMIN_PASSWORD \
-                   REVALIDATE_SECRET MEDIA_R2_ACCESS_KEY_ID MEDIA_R2_SECRET_ACCESS_KEY BACKUP_R2_ACCESS_KEY_ID BACKUP_R2_SECRET_ACCESS_KEY; do
+          vars=(DOMAIN ADMIN_EMAIL MEDIA_BUCKET MEDIA_BASE_URL BACKUP_BUCKET R2_ENDPOINT DB_PASSWORD ADMIN_PASSWORD
+                REVALIDATE_SECRET MEDIA_R2_ACCESS_KEY_ID MEDIA_R2_SECRET_ACCESS_KEY BACKUP_R2_ACCESS_KEY_ID BACKUP_R2_SECRET_ACCESS_KEY)
+          # Valida tudo antes de enviar: nada chega à VM se faltar alguma variável.
+          for v in "${vars[@]}"; do
             [ -n "${!v}" ] || { echo "::error::$v não configurada no environment production"; exit 1; }
-            printf "%s='%s'\n" "$v" "${!v}"
-          done | ssh prod '/opt/agcriando/scripts/write-env.sh /opt/agcriando/.env'
+          done
+          # O #END final é exigido pelo write-env.sh: entrada truncada não substitui o .env.
+          { for v in "${vars[@]}"; do printf "%s='%s'\n" "$v" "${!v}"; done; echo '#END'; } \
+            | ssh prod '/opt/agcriando/scripts/write-env.sh /opt/agcriando/.env'
 
       - name: Deploy
         env:
