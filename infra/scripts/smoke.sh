@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Verificações de fumaça da pilha publicada. Uso: smoke.sh https://dominio [--insecure]
+# Verificações de fumaça da pilha publicada. Uso: smoke.sh https://dominio | http://127.0.0.1:8080
 set -euo pipefail
 
 BASE=${1:?url base}
 CURL=(curl -sS -o /dev/null -w '%{http_code}' --max-time 20)
-[ "${2:-}" = "--insecure" ] && CURL+=(-k)
 fail=0
 
 check() { # check <descrição> <status esperado> <curl args...>
@@ -15,7 +14,8 @@ check() { # check <descrição> <status esperado> <curl args...>
 }
 
 host=${BASE#https://}
-check "HTTP redireciona para HTTPS"   301 "http://$host/"
+# Em produção o redirecionamento é da Cloudflare (Always Use HTTPS); localmente não há TLS.
+[[ $BASE == https://* ]] && check "HTTP redireciona para HTTPS" 301 "http://$host/"
 check "página inicial"                200 "$BASE/"
 check "página de produto"             200 "$BASE/produto/caderno-floral"
 check "API health"                    200 "$BASE/api/health"

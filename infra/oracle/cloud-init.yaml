@@ -1,0 +1,34 @@
+#cloud-config
+# Bootstrap da VM Oracle Always Free (Ampere A1, Ubuntu 24.04 aarch64).
+# Ao criar a instância, cole este arquivo em "Cloud-init script" trocando __DEPLOY_SSH_PUBKEY__ e __TUNNEL_TOKEN__.
+package_update: true
+package_upgrade: true
+packages: [ca-certificates, curl, unattended-upgrades]
+
+users:
+  - default
+  - name: deploy
+    groups: [docker]
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+      - __DEPLOY_SSH_PUBKEY__
+
+groups: [docker]
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/90-agcriando.conf
+    content: |
+      PasswordAuthentication no
+      PermitRootLogin no
+      KbdInteractiveAuthentication no
+
+runcmd:
+  - curl -fsSL https://get.docker.com | sh
+  - systemctl enable --now docker
+  - install -d -o deploy -g deploy -m 750 /opt/agcriando
+  # cloudflared: túnel para o Nginx (127.0.0.1:8080) e para o SSH; rotas definidas no painel da Cloudflare.
+  - curl -fsSL -o /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+  - dpkg -i /tmp/cloudflared.deb && rm -f /tmp/cloudflared.deb
+  - cloudflared service install __TUNNEL_TOKEN__
+  - systemctl restart ssh

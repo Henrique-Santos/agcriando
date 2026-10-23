@@ -8,6 +8,8 @@ public sealed class StorageOptions
     public string Provider { get; set; } = "S3";
     public string Bucket { get; set; } = "";
     public string Region { get; set; } = "us-east-1";
+    /// <summary>Endpoint de um provedor compatível com S3 (ex.: Cloudflare R2). Vazio = AWS S3.</summary>
+    public string ServiceUrl { get; set; } = "";
     public string PublicBaseUrl { get; set; } = "";
     /// <summary>Pasta relativa ao ContentRoot quando Provider = Local.</summary>
     public string LocalPath { get; set; } = "media";

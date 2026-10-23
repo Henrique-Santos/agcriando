@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+  packages: write
 
 concurrency:
   group: deploy-production
@@ -26,56 +26,97 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
+      - name: Registry (owner em minúsculas, exigência do GHCR)
+        run: echo "REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
 
-      - id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build e push das imagens (arm64)
         env:
-          REGISTRY: ${{ steps.ecr.outputs.registry }}
           SITE_URL: ${{ vars.SITE_URL }}
           WHATSAPP: ${{ vars.WHATSAPP }}
         run: |
-          docker build -t "$REGISTRY/agcriando-api:$SHA" --target runtime backend
-          docker build -t "$REGISTRY/agcriando-migrator:$SHA" --target migrator backend
-          docker build -t "$REGISTRY/agcriando-web:$SHA" \
+          src="org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY"
+          docker build --label "$src" -t "$REGISTRY/agcriando-api:$SHA" --target runtime backend
+          docker build --label "$src" -t "$REGISTRY/agcriando-migrator:$SHA" --target migrator backend
+          docker build --label "$src" -t "$REGISTRY/agcriando-web:$SHA" \
             --build-arg NEXT_PUBLIC_SITE_URL="$SITE_URL" --build-arg NEXT_PUBLIC_WHATSAPP="$WHATSAPP" frontend
           for repo in agcriando-api agcriando-migrator agcriando-web; do docker push "$REGISTRY/$repo:$SHA"; done
 
-      - name: Publica os arquivos de infra
+      - name: SSH pela Cloudflare Access
         env:
-          BUCKET: ${{ vars.ARTIFACTS_BUCKET }}
+          HOST: ${{ vars.DEPLOY_HOST }}
+          KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          CF_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
-          tar czf infra.tgz -C infra --exclude=local.env --exclude=docker-compose.local.yml --exclude=tests .
-          aws s3 cp infra.tgz "s3://$BUCKET/artifacts/infra-$SHA.tgz" --only-show-errors
+          curl -fsSL -o /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+          sudo dpkg -i /tmp/cloudflared.deb
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host prod
+            HostName $HOST
+            User deploy
+            IdentityFile ~/.ssh/deploy
+            ProxyCommand cloudflared access ssh --hostname %h --service-token-id $CF_ID --service-token-secret $CF_SECRET
+          EOF
+          chmod 600 ~/.ssh/config
 
-      - name: Deploy na instância (SSM)
-        env:
-          BUCKET: ${{ vars.ARTIFACTS_BUCKET }}
-          INSTANCE: ${{ vars.EC2_INSTANCE_ID }}
-          REGION: ${{ vars.AWS_REGION }}
+      - name: Publica os arquivos de infra
         run: |
-          params=$(jq -nc --arg sha "$SHA" --arg b "$BUCKET" --arg r "$REGION" '{
-            executionTimeout: ["1800"],
-            commands: [
-              "set -euo pipefail",
-              "export HOME=/root AWS_DEFAULT_REGION=\($r) AWS_REGION=\($r)",
-              "mkdir -p /opt/agcriando",
-              "aws s3 cp s3://\($b)/artifacts/infra-\($sha).tgz /tmp/infra.tgz --only-show-errors",
-              "tar xzf /tmp/infra.tgz -C /opt/agcriando",
-              "/opt/agcriando/scripts/deploy.sh \($sha)"
-            ]}')
-          id=$(aws ssm send-command --instance-ids "$INSTANCE" --document-name AWS-RunShellScript \
-                --comment "deploy $SHA" --parameters "$params" --query Command.CommandId --output text)
-          echo "Comando SSM: $id"
-          for _ in $(seq 1 186); do  # até ~31 min, acima do executionTimeout de 30 min
-            status=$(aws ssm get-command-invocation --command-id "$id" --instance-id "$INSTANCE" --query Status --output text 2>/dev/null || echo Pending)
-            case "$status" in Pending|InProgress|Delayed) sleep 10 ;; *) break ;; esac
+          tar czf - -C infra --exclude=local.env --exclude=docker-compose.local.yml --exclude=tests \
+            --exclude=oracle --exclude=backups . | ssh prod 'tar xzf - -C /opt/agcriando'
+
+      - name: Grava o .env
+        env:
+          DOMAIN: ${{ vars.DOMAIN }}
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+          MEDIA_BUCKET: ${{ vars.MEDIA_BUCKET }}
+          MEDIA_BASE_URL: ${{ vars.MEDIA_BASE_URL }}
+          BACKUP_BUCKET: ${{ vars.BACKUP_BUCKET }}
+          R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          MEDIA_R2_ACCESS_KEY_ID: ${{ secrets.MEDIA_R2_ACCESS_KEY_ID }}
+          MEDIA_R2_SECRET_ACCESS_KEY: ${{ secrets.MEDIA_R2_SECRET_ACCESS_KEY }}
+          BACKUP_R2_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+          BACKUP_R2_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+        run: |
+          vars=(DOMAIN ADMIN_EMAIL MEDIA_BUCKET MEDIA_BASE_URL BACKUP_BUCKET R2_ENDPOINT DB_PASSWORD ADMIN_PASSWORD
+                REVALIDATE_SECRET MEDIA_R2_ACCESS_KEY_ID MEDIA_R2_SECRET_ACCESS_KEY BACKUP_R2_ACCESS_KEY_ID BACKUP_R2_SECRET_ACCESS_KEY)
+          # Valida tudo antes de enviar: nada chega à VM se faltar alguma variável.
+          for v in "${vars[@]}"; do
+            [ -n "${!v}" ] || { echo "::error::$v não configurada no environment production"; exit 1; }
           done
-          aws ssm get-command-invocation --command-id "$id" --instance-id "$INSTANCE" \
-            --query '[StandardOutputContent, StandardErrorContent]' --output text
-          [ "$status" = Success ] || { echo "::error::Deploy falhou: $status"; exit 1; }
+          # O #END final é exigido pelo write-env.sh: entrada truncada não substitui o .env.
+          { for v in "${vars[@]}"; do printf "%s='%s'\n" "$v" "${!v}"; done; echo '#END'; } \
+            | ssh prod '/opt/agcriando/scripts/write-env.sh /opt/agcriando/.env'
+
+      - name: Deploy
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # shellcheck disable=SC2029 # expansão no runner é intencional (usuário, registry e SHA)
+          # Login só para este deploy (token do job); o logout no fim não deixa credencial na VM.
+          ssh prod "docker login ghcr.io -u '$GITHUB_ACTOR' --password-stdin" <<< "$GHCR_TOKEN"
+          set +e
+          # shellcheck disable=SC2029
+          ssh prod "REGISTRY='$REGISTRY' /opt/agcriando/scripts/deploy.sh '$SHA'"; rc=$?
+          ssh prod 'docker logout ghcr.io'
+          exit $rc
+
+      - name: Limpa versões antigas no GHCR (mantém 10 para rollback)
+        uses: actions/delete-package-versions@v5
+        with: { package-type: container, package-name: agcriando-api, min-versions-to-keep: 10 }
+      - uses: actions/delete-package-versions@v5
+        with: { package-type: container, package-name: agcriando-web, min-versions-to-keep: 10 }
+      - uses: actions/delete-package-versions@v5
+        with: { package-type: container, package-name: agcriando-migrator, min-versions-to-keep: 10 }
