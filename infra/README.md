@@ -34,7 +34,7 @@ Testes dos scripts: `./tests/write-env.test.sh`, `./tests/backup.test.sh` e `./t
 
 ### 1. Cloudflare
 1. Adicione o domínio na Cloudflare (plano Free) e troque os nameservers no registro.br. Aguarde o status *Active*.
-2. SSL/TLS → *Full*. Edge Certificates → *Always Use HTTPS* ligado e HSTS ligado (max-age 12 meses).
+2. SSL/TLS → mantenha o *Automatic* (com o Tunnel, o modo não afeta a conexão com a VM). Edge Certificates → *Always Use HTTPS* ligado e HSTS ligado (max-age 12 meses).
 3. **R2** → crie os buckets `agcriando-media` e `agcriando-backups`.
    - `agcriando-media` → Settings → *Custom Domains* → `media.<domínio>`. Esse é o `MEDIA_BASE_URL`: `https://media.<domínio>`.
    - `agcriando-backups` → Settings → *Object lifecycle rules* → apagar objetos com mais de 30 dias.
@@ -47,9 +47,9 @@ Testes dos scripts: `./tests/write-env.test.sh`, `./tests/backup.test.sh` e `./t
 5. **Zero Trust → Access → Service Auth** → crie um *Service Token* `github-deploy` e anote o Client ID e o Secret. Em **Access → Applications**, crie uma *Self-hosted* para `ssh.<domínio>` com uma policy *Service Auth* que inclua esse token, mais uma policy *Allow* para o seu e-mail (para acesso manual).
 
 ### 2. Oracle Cloud
-1. Crie a conta e faça o **upgrade para Pay As You Go**. Contas *Free* podem ter instâncias ociosas reclamadas; no PAYG o que está nos limites Always Free continua sem custo. Em **Billing → Budgets**, crie um orçamento de US$ 1 com alerta por e-mail em 1%.
+1. Crie a conta com home region **Brazil East (São Paulo)** e faça o **upgrade para Pay As You Go**: em contas Free quase nunca há capacidade de A1 em São Paulo, e a Oracle pode parar VMs consideradas ociosas. No PAYG, o que está nos limites Always Free (até 4 OCPU e 24 GB de A1, 200 GB de disco) continua sem custo. Em **Billing → Budgets**, crie um orçamento de US$ 1 com alerta por e-mail em 1%.
 2. Gere a chave de deploy na sua máquina: `ssh-keygen -t ed25519 -f ~/.ssh/agcriando-deploy -N ''`.
-3. **Compute → Instances → Create**: imagem *Canonical Ubuntu 24.04* (aarch64), shape **VM.Standard.A1.Flex** com 2 OCPU e 12 GB, boot volume de 100 GB e sub-rede pública. Em *Advanced → Management → Cloud-init*, cole `oracle/cloud-init.yaml` com `__DEPLOY_SSH_PUBKEY__` = conteúdo de `~/.ssh/agcriando-deploy.pub` e `__TUNNEL_TOKEN__` = token do passo 1.4. Se der *Out of capacity*, tente outro *availability domain* ou repita mais tarde.
+3. **Compute → Instances → Create**: imagem *Canonical Ubuntu 24.04* (aarch64), shape **VM.Standard.A1.Flex** com 2 OCPU e 12 GB, boot volume de 100 GB e sub-rede pública. Em *Advanced → Management → Cloud-init*, cole `oracle/cloud-init.yaml` com `__DEPLOY_SSH_PUBKEY__` = conteúdo de `~/.ssh/agcriando-deploy.pub` e `__TUNNEL_TOKEN__` = token do passo 1.4. Se der *Out of capacity*, repita mais tarde (São Paulo tem um só *availability domain*).
 4. Na *security list* da VCN, **remova a regra de entrada da porta 22** (o acesso é só pelo túnel).
 5. Em alguns minutos, o túnel aparece como *Healthy* no painel da Cloudflare.
 6. Na sua máquina (com `cloudflared` instalado), configure o SSH:
