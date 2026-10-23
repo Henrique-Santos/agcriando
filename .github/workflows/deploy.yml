@@ -22,14 +22,14 @@ jobs:
     env:
       SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Registry (owner em minúsculas, exigência do GHCR)
         run: echo "REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -114,9 +114,13 @@ jobs:
           exit $rc
 
       - name: Limpa versões antigas no GHCR (mantém 10 para rollback)
-        uses: actions/delete-package-versions@v5
-        with: { package-type: container, package-name: agcriando-api, min-versions-to-keep: 10 }
-      - uses: actions/delete-package-versions@v5
-        with: { package-type: container, package-name: agcriando-web, min-versions-to-keep: 10 }
-      - uses: actions/delete-package-versions@v5
-        with: { package-type: container, package-name: agcriando-migrator, min-versions-to-keep: 10 }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Mesma API do actions/delete-package-versions, que ainda roda em Node 20.
+          for pkg in agcriando-api agcriando-web agcriando-migrator; do
+            api="/users/$GITHUB_REPOSITORY_OWNER/packages/container/$pkg/versions"
+            gh api --paginate "$api?per_page=100" -q '.[] | [.created_at, .id] | @tsv' \
+              | sort -r | tail -n +11 | cut -f2 \
+              | while read -r id; do gh api -X DELETE "$api/$id" --silent; done
+          done
