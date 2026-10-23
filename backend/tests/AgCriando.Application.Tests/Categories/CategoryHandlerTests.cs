@@ -15,9 +15,9 @@ public sealed class CategoryHandlerTests
     {
         await using var db = TestDb.Create();
         db.Categories.Add(Make.Category("cadernos", "Cadernos", 0));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var dto = await new CreateCategoryHandler(db).Handle(new CreateCategoryCommand("  Topos de bolo "), default);
+        var dto = await new CreateCategoryHandler(db).Handle(new CreateCategoryCommand("  Topos de bolo "), Ct);
 
         dto.ShouldBe(new AdminCategoryDto("topos-de-bolo", "Topos de bolo", 1, 0));
     }
@@ -27,7 +27,7 @@ public sealed class CategoryHandlerTests
     {
         await using var db = TestDb.Create();
         db.Categories.Add(Make.Category("bottons", "Bottons", 0));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
         var ex = await Should.ThrowAsync<RequestValidationException>(() =>
             new CreateCategoryHandler(db).Handle(new CreateCategoryCommand("BOTTONS"), default));
@@ -40,9 +40,9 @@ public sealed class CategoryHandlerTests
     {
         await using var db = TestDb.Create();
         db.Categories.Add(Make.Category("bottons", "Bottons antigos", 0));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var dto = await new CreateCategoryHandler(db).Handle(new CreateCategoryCommand("Bottons"), default);
+        var dto = await new CreateCategoryHandler(db).Handle(new CreateCategoryCommand("Bottons"), Ct);
 
         dto.Id.ShouldBe("bottons-2");
     }
@@ -51,7 +51,7 @@ public sealed class CategoryHandlerTests
     public async Task Create_uses_fallback_id_when_label_has_no_letters()
     {
         await using var db = TestDb.Create();
-        var dto = await new CreateCategoryHandler(db).Handle(new CreateCategoryCommand("★★★"), default);
+        var dto = await new CreateCategoryHandler(db).Handle(new CreateCategoryCommand("★★★"), Ct);
         dto.Id.ShouldBe("categoria");
     }
 
@@ -60,9 +60,9 @@ public sealed class CategoryHandlerTests
     {
         await using var db = TestDb.Create();
         db.Categories.Add(Make.Category("bottons", "bottons", 0));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var dto = await new RenameCategoryHandler(db).Handle(new RenameCategoryCommand("bottons", "Bottons"), default);
+        var dto = await new RenameCategoryHandler(db).Handle(new RenameCategoryCommand("bottons", "Bottons"), Ct);
 
         dto.Label.ShouldBe("Bottons");
         dto.Id.ShouldBe("bottons");
@@ -73,7 +73,7 @@ public sealed class CategoryHandlerTests
     {
         await using var db = TestDb.Create();
         db.Categories.AddRange(Make.Category("bottons", "Bottons", 0), Make.Category("canecas", "Canecas", 1));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
         var ex = await Should.ThrowAsync<RequestValidationException>(() =>
             new RenameCategoryHandler(db).Handle(new RenameCategoryCommand("canecas", "bottons"), default));
@@ -94,11 +94,11 @@ public sealed class CategoryHandlerTests
     {
         await using var db = TestDb.Create();
         db.Categories.AddRange(Make.Category("a", sortOrder: 0), Make.Category("b", sortOrder: 1), Make.Category("c", sortOrder: 2));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        await new ReorderCategoriesHandler(db).Handle(new ReorderCategoriesCommand(["c", "a", "b"]), default);
+        await new ReorderCategoriesHandler(db).Handle(new ReorderCategoriesCommand(["c", "a", "b"]), Ct);
 
-        (await db.Categories.OrderBy(c => c.SortOrder).Select(c => c.Id).ToListAsync()).ShouldBe(["c", "a", "b"]);
+        (await db.Categories.OrderBy(c => c.SortOrder).Select(c => c.Id).ToListAsync(Ct)).ShouldBe(["c", "a", "b"]);
     }
 
     [Theory]
@@ -110,7 +110,7 @@ public sealed class CategoryHandlerTests
         var ids = csv.Split(',');
         await using var db = TestDb.Create();
         db.Categories.AddRange(Make.Category("a", sortOrder: 0), Make.Category("b", sortOrder: 1), Make.Category("c", sortOrder: 2));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
         var ex = await Should.ThrowAsync<RequestValidationException>(() =>
             new ReorderCategoriesHandler(db).Handle(new ReorderCategoriesCommand(ids), default));
@@ -123,7 +123,7 @@ public sealed class CategoryHandlerTests
         await using var db = TestDb.Create();
         db.Categories.Add(Make.Category("cadernos"));
         db.Products.Add(Make.Product("oculto", "cadernos", active: false));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
         var ex = await Should.ThrowAsync<ConflictException>(() =>
             new DeleteCategoryHandler(db).Handle(new DeleteCategoryCommand("cadernos"), default));
@@ -135,11 +135,11 @@ public sealed class CategoryHandlerTests
     {
         await using var db = TestDb.Create();
         db.Categories.Add(Make.Category("vazia"));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        await new DeleteCategoryHandler(db).Handle(new DeleteCategoryCommand("vazia"), default);
+        await new DeleteCategoryHandler(db).Handle(new DeleteCategoryCommand("vazia"), Ct);
 
-        (await db.Categories.AnyAsync()).ShouldBeFalse();
+        (await db.Categories.AnyAsync(Ct)).ShouldBeFalse();
     }
 
     [Fact]
@@ -148,9 +148,9 @@ public sealed class CategoryHandlerTests
         await using var db = TestDb.Create();
         db.Categories.AddRange(Make.Category("b", "B", 1), Make.Category("a", "A", 0));
         db.Products.AddRange(Make.Product("p1", "a"), Make.Product("p2", "a", active: false));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var list = await new ListCategoriesHandler(db).Handle(new ListCategoriesQuery(), default);
+        var list = await new ListCategoriesHandler(db).Handle(new ListCategoriesQuery(), Ct);
 
         list.Select(c => (c.Id, c.ProductCount)).ShouldBe([("a", 2), ("b", 0)]);
     }

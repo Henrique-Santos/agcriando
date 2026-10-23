@@ -18,7 +18,7 @@ public sealed class AuthTests(PostgresFixture postgres) : ApiTestBase(postgres)
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Headers.GetValues("Set-Cookie").ShouldContain(c => c.StartsWith("agc_session=") && c.Contains("httponly") && c.Contains("samesite=strict"));
-        var me = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var me = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
         me.GetProperty("email").GetString().ShouldBe(ApiFactory.AdminEmail);
         me.GetProperty("roles").EnumerateArray().Select(r => r.GetString()).ShouldBe(["Admin"]);
     }
@@ -34,14 +34,14 @@ public sealed class AuthTests(PostgresFixture postgres) : ApiTestBase(postgres)
     public async Task Me_returns_current_user_after_login()
     {
         var admin = await CreateAdminClientAsync();
-        var me = await admin.GetFromJsonAsync<JsonElement>("/api/auth/me");
+        var me = await admin.GetFromJsonAsync<JsonElement>("/api/auth/me", Ct);
         me.GetProperty("email").GetString().ShouldBe(ApiFactory.AdminEmail);
     }
 
     [Fact]
     public async Task Me_returns_401_without_session()
     {
-        (await Client.GetAsync("/api/auth/me")).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await Client.GetAsync("/api/auth/me", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class AuthTests(PostgresFixture postgres) : ApiTestBase(postgres)
         var response = await Login(Client, ApiFactory.AdminEmail, "senha-errada-000");
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
         problem.GetProperty("title").GetString().ShouldBe("E-mail ou senha incorretos.");
     }
 
@@ -59,7 +59,7 @@ public sealed class AuthTests(PostgresFixture postgres) : ApiTestBase(postgres)
     {
         var response = await Login(Client, "ninguem@agcriando.test", "qualquer-coisa-1");
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("title").GetString().ShouldBe("E-mail ou senha incorretos.");
+        (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("title").GetString().ShouldBe("E-mail ou senha incorretos.");
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class AuthTests(PostgresFixture postgres) : ApiTestBase(postgres)
         var response = await Login(Client, "", "");
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
         problem.GetProperty("errors").GetProperty("email")[0].GetString().ShouldBe("Preencha e-mail e senha.");
     }
 
@@ -81,7 +81,7 @@ public sealed class AuthTests(PostgresFixture postgres) : ApiTestBase(postgres)
         var response = await Login(Client, ApiFactory.AdminEmail, ApiFactory.AdminPassword);
 
         response.StatusCode.ShouldBe((HttpStatusCode)423);
-        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("title").GetString()
+        (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("title").GetString()
             .ShouldBe("Muitas tentativas. Tente novamente em 15 minutos.");
     }
 
@@ -90,8 +90,8 @@ public sealed class AuthTests(PostgresFixture postgres) : ApiTestBase(postgres)
     {
         var admin = await CreateAdminClientAsync();
 
-        (await admin.PostAsync("/api/auth/logout", null)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        (await admin.GetAsync("/api/auth/me")).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await admin.PostAsync("/api/auth/logout", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await admin.GetAsync("/api/auth/me", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]

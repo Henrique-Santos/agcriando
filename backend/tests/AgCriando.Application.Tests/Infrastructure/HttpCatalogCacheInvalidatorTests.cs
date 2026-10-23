@@ -28,7 +28,7 @@ public sealed class HttpCatalogCacheInvalidatorTests
     {
         var handler = new RecordingHandler(HttpStatusCode.OK);
 
-        await Create(handler, "http://web:3000/api/revalidate").InvalidateAsync(default);
+        await Create(handler, "http://web:3000/api/revalidate").InvalidateAsync(Ct);
 
         handler.Request!.Method.ShouldBe(HttpMethod.Post);
         handler.Request.RequestUri!.ToString().ShouldBe("http://web:3000/api/revalidate");
@@ -40,7 +40,7 @@ public sealed class HttpCatalogCacheInvalidatorTests
     public async Task Does_nothing_without_url()
     {
         var handler = new RecordingHandler(HttpStatusCode.OK);
-        await Create(handler, "").InvalidateAsync(default);
+        await Create(handler, "").InvalidateAsync(Ct);
         handler.Request.ShouldBeNull();
     }
 

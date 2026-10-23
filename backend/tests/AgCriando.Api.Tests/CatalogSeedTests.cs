@@ -14,7 +14,7 @@ public sealed class CatalogSeedTests(PostgresFixture postgres) : ApiTestBase(pos
     [Fact]
     public async Task Imports_design_catalog_with_photos()
     {
-        var catalog = await Client.GetFromJsonAsync<JsonElement>("/api/catalog");
+        var catalog = await Client.GetFromJsonAsync<JsonElement>("/api/catalog", Ct);
 
         var categories = catalog.GetProperty("categories");
         categories.GetArrayLength().ShouldBe(9);
@@ -36,9 +36,9 @@ public sealed class CatalogSeedTests(PostgresFixture postgres) : ApiTestBase(pos
     public async Task Running_initialization_again_does_not_duplicate()
     {
         _ = Factory.Server;
-        await Factory.Services.InitializeDatabaseAsync();
+        await Factory.Services.InitializeDatabaseAsync(ct: Ct);
 
-        var catalog = await Client.GetFromJsonAsync<JsonElement>("/api/catalog");
+        var catalog = await Client.GetFromJsonAsync<JsonElement>("/api/catalog", Ct);
         catalog.GetProperty("products").GetArrayLength().ShouldBe(21);
     }
 }

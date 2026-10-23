@@ -21,10 +21,10 @@ public sealed class UploadEndpointTests(PostgresFixture postgres) : ApiTestBase(
     {
         var admin = await CreateAdminClientAsync();
 
-        var response = await admin.PostAsync("/api/admin/uploads", File(TestImages.Jpeg(1600, 1200), "image/jpeg"));
+        var response = await admin.PostAsync("/api/admin/uploads", File(TestImages.Jpeg(1600, 1200), "image/jpeg"), Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var url = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("url").GetString()!;
+        var url = (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("url").GetString()!;
         url.ShouldStartWith("https://media.test/products/");
         url.ShouldEndWith(".webp");
         Factory.Storage.Saved.Keys.ShouldHaveSingleItem().ShouldBe(url.Replace("https://media.test/", ""));
@@ -35,10 +35,10 @@ public sealed class UploadEndpointTests(PostgresFixture postgres) : ApiTestBase(
     {
         var admin = await CreateAdminClientAsync();
 
-        var response = await admin.PostAsync("/api/admin/uploads", File("oi"u8.ToArray(), "text/plain", "nota.txt"));
+        var response = await admin.PostAsync("/api/admin/uploads", File("oi"u8.ToArray(), "text/plain", "nota.txt"), Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("errors").GetProperty("file")[0].GetString()
+        (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("errors").GetProperty("file")[0].GetString()
             .ShouldBe("Envie uma imagem JPG, PNG ou WebP.");
     }
 
@@ -47,10 +47,10 @@ public sealed class UploadEndpointTests(PostgresFixture postgres) : ApiTestBase(
     {
         var admin = await CreateAdminClientAsync();
 
-        var response = await admin.PostAsync("/api/admin/uploads", File("isto não é uma imagem"u8.ToArray(), "image/jpeg"));
+        var response = await admin.PostAsync("/api/admin/uploads", File("isto não é uma imagem"u8.ToArray(), "image/jpeg"), Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("errors").GetProperty("file")[0].GetString()
+        (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("errors").GetProperty("file")[0].GetString()
             .ShouldBe("Não foi possível ler a imagem.");
         Factory.Storage.Saved.ShouldBeEmpty();
     }
@@ -58,7 +58,7 @@ public sealed class UploadEndpointTests(PostgresFixture postgres) : ApiTestBase(
     [Fact]
     public async Task Anonymous_upload_returns_401()
     {
-        var response = await Client.PostAsync("/api/admin/uploads", File(TestImages.Jpeg(10, 10), "image/jpeg"));
+        var response = await Client.PostAsync("/api/admin/uploads", File(TestImages.Jpeg(10, 10), "image/jpeg"), Ct);
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

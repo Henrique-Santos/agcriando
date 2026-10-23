@@ -5,9 +5,7 @@ namespace AgCriando.Api.Tests.Support;
 
 public sealed class PostgresFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
-        .WithImage("postgres:17-alpine")
-        .Build();
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17-alpine").Build();
 
     /// <summary>Cada factory recebe um banco novo; o EF cria o banco ao migrar.</summary>
     public string ConnectionStringForNewDatabase() =>

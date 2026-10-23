@@ -49,7 +49,7 @@ public sealed class ProductEndpointTests(PostgresFixture postgres) : ApiTestBase
         var id = await CreateAsync(admin, NewProduct());
 
         id.ShouldStartWith("caneca-coracao-");
-        var product = await Client.GetFromJsonAsync<JsonElement>($"/api/catalog/products/{id}");
+        var product = await Client.GetFromJsonAsync<JsonElement>($"/api/catalog/products/{id}", Ct);
         product.GetProperty("name").GetString().ShouldBe("Caneca Coração");
         product.GetProperty("optionName").GetString().ShouldBe("Alça");
     }
@@ -59,10 +59,10 @@ public sealed class ProductEndpointTests(PostgresFixture postgres) : ApiTestBase
     {
         var admin = await AdminWithCategoryAsync();
 
-        var response = await admin.PostAsJsonAsync("/api/admin/products", NewProduct(name: "", price: 0));
+        var response = await admin.PostAsJsonAsync("/api/admin/products", NewProduct(name: "", price: 0), Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        var errors = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("errors");
+        var errors = (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("errors");
         errors.GetProperty("name")[0].GetString().ShouldBe("Dê um nome ao produto.");
         errors.GetProperty("price")[0].GetString().ShouldBe("Informe um preço maior que zero.");
     }
@@ -73,7 +73,7 @@ public sealed class ProductEndpointTests(PostgresFixture postgres) : ApiTestBase
         var admin = await AdminWithCategoryAsync();
 
         var response = await admin.PostAsync("/api/admin/products",
-            new StringContent("{ \"name\": \"Caneca\", \"price\": ", Encoding.UTF8, "application/json"));
+            new StringContent("{ \"name\": \"Caneca\", \"price\": ", Encoding.UTF8, "application/json"), Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
@@ -84,7 +84,7 @@ public sealed class ProductEndpointTests(PostgresFixture postgres) : ApiTestBase
         var admin = await AdminWithCategoryAsync();
 
         var response = await admin.PostAsync("/api/admin/products", new StringContent(
-            """{"name":"Caneca","categoryId":"canecas","price":"39.9"}""", Encoding.UTF8, "application/json"));
+            """{"name":"Caneca","categoryId":"canecas","price":"39.9"}""", Encoding.UTF8, "application/json"), Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
@@ -95,13 +95,13 @@ public sealed class ProductEndpointTests(PostgresFixture postgres) : ApiTestBase
         var admin = await AdminWithCategoryAsync();
         var id = await CreateAsync(admin, NewProduct());
 
-        var patch = await admin.PatchAsJsonAsync($"/api/admin/products/{id}", new { active = false });
+        var patch = await admin.PatchAsJsonAsync($"/api/admin/products/{id}", new { active = false }, Ct);
 
         patch.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await Client.GetAsync($"/api/catalog/products/{id}")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        var catalog = await Client.GetFromJsonAsync<JsonElement>("/api/catalog");
+        (await Client.GetAsync($"/api/catalog/products/{id}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var catalog = await Client.GetFromJsonAsync<JsonElement>("/api/catalog", Ct);
         catalog.GetProperty("products").GetArrayLength().ShouldBe(0);
-        var hidden = await admin.GetFromJsonAsync<JsonElement>("/api/admin/products?status=off");
+        var hidden = await admin.GetFromJsonAsync<JsonElement>("/api/admin/products?status=off", Ct);
         hidden.GetProperty("items")[0].GetProperty("id").GetString().ShouldBe(id);
         hidden.GetProperty("total").GetInt32().ShouldBe(1);
         hidden.GetProperty("activeCount").GetInt32().ShouldBe(0);
@@ -113,11 +113,11 @@ public sealed class ProductEndpointTests(PostgresFixture postgres) : ApiTestBase
         var admin = await AdminWithCategoryAsync();
         var id = await CreateAsync(admin, NewProduct());
 
-        var put = await admin.PutAsJsonAsync($"/api/admin/products/{id}", NewProduct(name: "Caneca grande", price: 49.9m));
+        var put = await admin.PutAsJsonAsync($"/api/admin/products/{id}", NewProduct(name: "Caneca grande", price: 49.9m), Ct);
         put.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await put.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("price").GetDecimal().ShouldBe(49.9m);
+        (await put.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("price").GetDecimal().ShouldBe(49.9m);
 
-        (await admin.DeleteAsync($"/api/admin/products/{id}")).StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        (await admin.GetAsync($"/api/admin/products/{id}")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await admin.DeleteAsync($"/api/admin/products/{id}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await admin.GetAsync($"/api/admin/products/{id}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

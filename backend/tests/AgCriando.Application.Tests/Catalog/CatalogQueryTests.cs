@@ -16,9 +16,9 @@ public sealed class CatalogQueryTests
             Make.Product("b", "cadernos", sortOrder: 1),
             Make.Product("a", "cadernos", sortOrder: 0),
             Make.Product("oculto", "canecas", active: false));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var catalog = await new GetCatalogHandler(db).Handle(new GetCatalogQuery(), default);
+        var catalog = await new GetCatalogHandler(db).Handle(new GetCatalogQuery(), Ct);
 
         catalog.Categories.Select(c => c.Id).ShouldBe(["cadernos", "canecas"]);
         catalog.Products.Select(p => p.Id).ShouldBe(["a", "b"]);
@@ -29,9 +29,9 @@ public sealed class CatalogQueryTests
     {
         await using var db = TestDb.Create();
         db.Products.Add(Make.Product("caderno-floral", name: "Caderno floral"));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var dto = await new GetProductByIdHandler(db).Handle(new GetProductByIdQuery("caderno-floral"), default);
+        var dto = await new GetProductByIdHandler(db).Handle(new GetProductByIdQuery("caderno-floral"), Ct);
 
         dto.Name.ShouldBe("Caderno floral");
         dto.Price.ShouldBe(69.9m);
@@ -42,7 +42,7 @@ public sealed class CatalogQueryTests
     {
         await using var db = TestDb.Create();
         db.Products.Add(Make.Product("oculto", active: false));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
         var ex = await Should.ThrowAsync<NotFoundException>(() =>
             new GetProductByIdHandler(db).Handle(new GetProductByIdQuery("oculto"), default));

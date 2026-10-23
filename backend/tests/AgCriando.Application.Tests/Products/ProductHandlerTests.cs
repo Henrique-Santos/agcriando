@@ -30,15 +30,15 @@ public sealed class ProductHandlerTests
     {
         await using var db = await DbWithCategoriesAsync();
         db.Products.Add(Make.Product("existente", "canecas", sortOrder: 0));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var dto = await new CreateProductHandler(db, _clock).Handle(new CreateProductCommand(Input()), default);
+        var dto = await new CreateProductHandler(db, _clock).Handle(new CreateProductCommand(Input()), Ct);
 
         dto.Id.ShouldBe("caneca-coracao-muet1un9");
         dto.Name.ShouldBe("Caneca Coração");
         dto.MinQuantity.ShouldBe(10);
         dto.OptionValues.ShouldBe(["Branca", "Colorida"]);
-        (await db.Products.SingleAsync(p => p.Id == dto.Id)).SortOrder.ShouldBe(-1);
+        (await db.Products.SingleAsync(p => p.Id == dto.Id, Ct)).SortOrder.ShouldBe(-1);
     }
 
     [Fact]
@@ -57,10 +57,10 @@ public sealed class ProductHandlerTests
     {
         await using var db = await DbWithCategoriesAsync();
         db.Products.Add(Make.Product("caneca", "canecas"));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
         var dto = await new UpdateProductHandler(db, _clock).Handle(
-            new UpdateProductCommand("caneca", Input(name: "Caneca nova", categoryId: "cadernos", price: 45m)), default);
+            new UpdateProductCommand("caneca", Input(name: "Caneca nova", categoryId: "cadernos", price: 45m)), Ct);
 
         dto.Id.ShouldBe("caneca");
         dto.Name.ShouldBe("Caneca nova");
@@ -82,9 +82,9 @@ public sealed class ProductHandlerTests
     {
         await using var db = await DbWithCategoriesAsync();
         db.Products.Add(Make.Product("caneca", "canecas", price: 39.9m));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        var dto = await new PatchProductHandler(db, _clock).Handle(new PatchProductCommand("caneca", 42.5m, false, null), default);
+        var dto = await new PatchProductHandler(db, _clock).Handle(new PatchProductCommand("caneca", 42.5m, false, null), Ct);
 
         dto.Price.ShouldBe(42.5m);
         dto.Active.ShouldBeFalse();
@@ -96,11 +96,11 @@ public sealed class ProductHandlerTests
     {
         await using var db = await DbWithCategoriesAsync();
         db.Products.Add(Make.Product("caneca", "canecas"));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        await new DeleteProductHandler(db).Handle(new DeleteProductCommand("caneca"), default);
+        await new DeleteProductHandler(db).Handle(new DeleteProductCommand("caneca"), Ct);
 
-        (await db.Products.AnyAsync()).ShouldBeFalse();
+        (await db.Products.AnyAsync(Ct)).ShouldBeFalse();
     }
 
     [Fact]
@@ -111,14 +111,14 @@ public sealed class ProductHandlerTests
             Make.Product("c1", "canecas", sortOrder: 0, name: "Caneca de chopp"),
             Make.Product("c2", "canecas", sortOrder: 1, active: false, name: "Caneca princesa"),
             Make.Product("k1", "cadernos", sortOrder: 2, name: "Caderno floral"));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
         var handler = new ListProductsHandler(db);
 
-        (await handler.Handle(new ListProductsQuery("CANECA", null, null), default)).Items.Select(p => p.Id).ShouldBe(["c1", "c2"]);
-        (await handler.Handle(new ListProductsQuery(null, "cadernos", "all"), default)).Items.Select(p => p.Id).ShouldBe(["k1"]);
-        (await handler.Handle(new ListProductsQuery(null, null, "off"), default)).Items.Select(p => p.Id).ShouldBe(["c2"]);
+        (await handler.Handle(new ListProductsQuery("CANECA", null, null), Ct)).Items.Select(p => p.Id).ShouldBe(["c1", "c2"]);
+        (await handler.Handle(new ListProductsQuery(null, "cadernos", "all"), Ct)).Items.Select(p => p.Id).ShouldBe(["k1"]);
+        (await handler.Handle(new ListProductsQuery(null, null, "off"), Ct)).Items.Select(p => p.Id).ShouldBe(["c2"]);
 
-        var on = await handler.Handle(new ListProductsQuery(null, null, "on"), default);
+        var on = await handler.Handle(new ListProductsQuery(null, null, "on"), Ct);
         on.Items.Select(p => p.Id).ShouldBe(["c1", "k1"]);
         on.Total.ShouldBe(3);
         on.ActiveCount.ShouldBe(2);
@@ -129,8 +129,8 @@ public sealed class ProductHandlerTests
     {
         await using var db = await DbWithCategoriesAsync();
         db.Products.Add(Make.Product("oculto", "canecas", active: false));
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(Ct);
 
-        (await new GetProductForEditHandler(db).Handle(new GetProductForEditQuery("oculto"), default)).Active.ShouldBeFalse();
+        (await new GetProductForEditHandler(db).Handle(new GetProductForEditQuery("oculto"), Ct)).Active.ShouldBeFalse();
     }
 }

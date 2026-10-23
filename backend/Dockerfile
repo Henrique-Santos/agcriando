@@ -7,9 +7,11 @@ COPY src/AgCriando.Domain/AgCriando.Domain.csproj src/AgCriando.Domain/
 COPY src/AgCriando.Application/AgCriando.Application.csproj src/AgCriando.Application/
 COPY src/AgCriando.Infrastructure/AgCriando.Infrastructure.csproj src/AgCriando.Infrastructure/
 COPY src/AgCriando.Api/AgCriando.Api.csproj src/AgCriando.Api/
-RUN dotnet restore src/AgCriando.Api/AgCriando.Api.csproj && dotnet tool restore
+RUN dotnet restore src/AgCriando.Api/AgCriando.Api.csproj --use-current-runtime && dotnet tool restore
 COPY src/ src/
-RUN dotnet publish src/AgCriando.Api/AgCriando.Api.csproj -c Release -o /app --no-restore -p:OpenApiGenerateDocuments=false
+# --use-current-runtime: só os nativos da libvips da arquitetura do build (arm64 no deploy).
+RUN dotnet publish src/AgCriando.Api/AgCriando.Api.csproj -c Release -o /app --no-restore --use-current-runtime --self-contained false \
+      -p:OpenApiGenerateDocuments=false
 
 FROM build AS bundle
 RUN dotnet ef migrations bundle \
