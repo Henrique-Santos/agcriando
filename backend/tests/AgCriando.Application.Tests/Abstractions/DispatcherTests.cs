@@ -57,11 +57,11 @@ public sealed class DispatcherTests
 
     [Fact]
     public async Task Send_runs_the_command_handler() =>
-        (await _dispatcher.Send(new EchoCommand("abc"))).ShouldBe("ABC");
+        (await _dispatcher.Send(new EchoCommand("abc"), Ct)).ShouldBe("ABC");
 
     [Fact]
     public async Task Query_runs_the_query_handler() =>
-        (await _dispatcher.Query(new PingQuery(1))).ShouldBe(2);
+        (await _dispatcher.Query(new PingQuery(1), Ct)).ShouldBe(2);
 
     [Fact]
     public async Task Send_throws_validation_exception_with_camel_case_fields()
@@ -77,14 +77,14 @@ public sealed class DispatcherTests
     [Fact]
     public async Task Catalog_mutation_invalidates_cache_after_handler()
     {
-        await _dispatcher.Send(new MutateCommand("x"));
+        await _dispatcher.Send(new MutateCommand("x"), Ct);
         await _invalidator.Received(1).InvalidateAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Non_mutation_does_not_invalidate_cache()
     {
-        await _dispatcher.Send(new EchoCommand("x"));
+        await _dispatcher.Send(new EchoCommand("x"), Ct);
         await _invalidator.DidNotReceive().InvalidateAsync(Arg.Any<CancellationToken>());
     }
 
@@ -99,6 +99,6 @@ public sealed class DispatcherTests
     public async Task Invalidation_failure_does_not_fail_the_command()
     {
         _invalidator.InvalidateAsync(Arg.Any<CancellationToken>()).ThrowsAsync(new HttpRequestException("front fora do ar"));
-        (await _dispatcher.Send(new MutateCommand("x"))).ShouldBe(Unit.Value);
+        (await _dispatcher.Send(new MutateCommand("x"), Ct)).ShouldBe(Unit.Value);
     }
 }

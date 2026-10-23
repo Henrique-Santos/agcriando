@@ -18,7 +18,7 @@ public sealed class UploadProductImageTests
         storage.SaveAsync(key, bytes, "image/webp", Arg.Any<CancellationToken>()).Returns("https://media.test/" + key);
 
         var result = await new UploadProductImageHandler(processor, storage)
-            .Handle(new UploadProductImageCommand(new MemoryStream([1, 2, 3]), "image/jpeg", 3), default);
+            .Handle(new UploadProductImageCommand(new MemoryStream([1, 2, 3]), "image/jpeg", 3), Ct);
 
         result.Url.ShouldBe("https://media.test/" + key);
     }

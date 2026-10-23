@@ -14,9 +14,9 @@ public sealed class RateLimitTests(PostgresFixture postgres) : ApiTestBase(postg
     public async Task Login_is_rate_limited_per_client()
     {
         for (var i = 0; i < 3; i++)
-            await Client.PostAsJsonAsync("/api/auth/login", new { email = "x@x.com", password = "nao-importa-1" });
+            await Client.PostAsJsonAsync("/api/auth/login", new { email = "x@x.com", password = "nao-importa-1" }, Ct);
 
-        var response = await Client.PostAsJsonAsync("/api/auth/login", new { email = "x@x.com", password = "nao-importa-1" });
+        var response = await Client.PostAsJsonAsync("/api/auth/login", new { email = "x@x.com", password = "nao-importa-1" }, Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
     }

@@ -12,7 +12,7 @@ public sealed class HealthTests(PostgresFixture postgres) : ApiTestBase(postgres
     [Fact]
     public async Task Health_returns_200_when_database_is_reachable()
     {
-        var response = await Client.GetAsync("/api/health");
+        var response = await Client.GetAsync("/api/health", Ct);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
@@ -22,7 +22,7 @@ public sealed class HealthTests(PostgresFixture postgres) : ApiTestBase(postgres
         _ = Factory.Server; // força a inicialização do host
         await using var scope = Factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        (await db.Categories.CountAsync()).ShouldBe(0);
-        (await db.Database.GetPendingMigrationsAsync()).ShouldBeEmpty();
+        (await db.Categories.CountAsync(Ct)).ShouldBe(0);
+        (await db.Database.GetPendingMigrationsAsync(Ct)).ShouldBeEmpty();
     }
 }

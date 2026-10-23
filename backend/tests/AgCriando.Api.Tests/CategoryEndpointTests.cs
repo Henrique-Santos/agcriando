@@ -12,14 +12,14 @@ public sealed class CategoryEndpointTests(PostgresFixture postgres) : ApiTestBas
     [Fact]
     public async Task Anonymous_request_returns_401()
     {
-        (await Client.GetAsync("/api/admin/categories")).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await Client.GetAsync("/api/admin/categories", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
     public async Task User_without_admin_role_returns_403()
     {
         var user = await CreateUserClientAsync("visitante@agcriando.test", "senha-visitante-1");
-        (await user.GetAsync("/api/admin/categories")).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await user.GetAsync("/api/admin/categories", Ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -27,22 +27,22 @@ public sealed class CategoryEndpointTests(PostgresFixture postgres) : ApiTestBas
     {
         var admin = await CreateAdminClientAsync();
 
-        var created = await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Canecas & potes" });
+        var created = await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Canecas & potes" }, Ct);
         created.StatusCode.ShouldBe(HttpStatusCode.Created);
         created.Headers.Location!.ToString().ShouldBe("/api/admin/categories/canecas-potes");
-        await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Bottons" });
+        await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Bottons" }, Ct);
 
-        var renamed = await admin.PutAsJsonAsync("/api/admin/categories/canecas-potes", new { label = "Canecas" });
+        var renamed = await admin.PutAsJsonAsync("/api/admin/categories/canecas-potes", new { label = "Canecas" }, Ct);
         renamed.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await renamed.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("label").GetString().ShouldBe("Canecas");
+        (await renamed.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("label").GetString().ShouldBe("Canecas");
 
-        var reordered = await admin.PutAsJsonAsync("/api/admin/categories/order", new { ids = new[] { "bottons", "canecas-potes" } });
+        var reordered = await admin.PutAsJsonAsync("/api/admin/categories/order", new { ids = new[] { "bottons", "canecas-potes" } }, Ct);
         reordered.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
-        var list = await admin.GetFromJsonAsync<JsonElement>("/api/admin/categories");
+        var list = await admin.GetFromJsonAsync<JsonElement>("/api/admin/categories", Ct);
         list.EnumerateArray().Select(c => c.GetProperty("id").GetString()).ShouldBe(["bottons", "canecas-potes"]);
 
-        (await admin.DeleteAsync("/api/admin/categories/bottons")).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await admin.DeleteAsync("/api/admin/categories/bottons", Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
         Factory.Invalidator.Calls.ShouldBe(5);
     }
 
@@ -50,12 +50,12 @@ public sealed class CategoryEndpointTests(PostgresFixture postgres) : ApiTestBas
     public async Task Duplicate_label_returns_validation_problem()
     {
         var admin = await CreateAdminClientAsync();
-        await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Bottons" });
+        await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Bottons" }, Ct);
 
-        var response = await admin.PostAsJsonAsync("/api/admin/categories", new { label = "bottons" });
+        var response = await admin.PostAsJsonAsync("/api/admin/categories", new { label = "bottons" }, Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
         problem.GetProperty("errors").GetProperty("label")[0].GetString().ShouldBe("Já existe uma categoria com esse nome.");
     }
 
@@ -71,10 +71,10 @@ public sealed class CategoryEndpointTests(PostgresFixture postgres) : ApiTestBas
         });
         var admin = await CreateAdminClientAsync();
 
-        var response = await admin.DeleteAsync("/api/admin/categories/cadernos");
+        var response = await admin.DeleteAsync("/api/admin/categories/cadernos", Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
-        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("title").GetString()
+        (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("title").GetString()
             .ShouldBe("Mova ou exclua os produtos desta categoria antes.");
     }
 
@@ -84,7 +84,7 @@ public sealed class CategoryEndpointTests(PostgresFixture postgres) : ApiTestBas
         var admin = await CreateAdminClientAsync();
         admin.DefaultRequestHeaders.Remove("X-Requested-With");
 
-        var response = await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Bottons" });
+        var response = await admin.PostAsJsonAsync("/api/admin/categories", new { label = "Bottons" }, Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }

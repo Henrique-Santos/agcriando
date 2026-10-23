@@ -15,7 +15,7 @@ public sealed class ForwardedHeadersTests(PostgresFixture postgres) : ApiTestBas
         };
         request.Headers.Add("X-Forwarded-Proto", "https");
 
-        var response = await Client.SendAsync(request);
+        var response = await Client.SendAsync(request, Ct);
 
         response.EnsureSuccessStatusCode();
         response.Headers.GetValues("Set-Cookie").ShouldContain(c => c.StartsWith("agc_session=") && c.Contains("secure"));

@@ -27,7 +27,7 @@ public sealed class CatalogEndpointTests(PostgresFixture postgres) : ApiTestBase
     {
         await SeedCatalogAsync();
 
-        var json = await Client.GetFromJsonAsync<JsonElement>("/api/catalog");
+        var json = await Client.GetFromJsonAsync<JsonElement>("/api/catalog", Ct);
 
         json.GetProperty("categories")[0].GetProperty("label").GetString().ShouldBe("Cadernos & planners");
         var products = json.GetProperty("products");
@@ -44,11 +44,11 @@ public sealed class CatalogEndpointTests(PostgresFixture postgres) : ApiTestBase
     {
         await SeedCatalogAsync();
 
-        var response = await Client.GetAsync("/api/catalog/products/oculto");
+        var response = await Client.GetAsync("/api/catalog/products/oculto", Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         response.Content.Headers.ContentType!.MediaType.ShouldBe("application/problem+json");
-        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
         problem.GetProperty("title").GetString().ShouldBe("Produto não encontrado.");
     }
 }
