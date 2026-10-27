@@ -1,4 +1,5 @@
 using AgCriando.Application.Common;
+using AgCriando.Application.Uploads.Commands;
 using NetVips;
 
 namespace AgCriando.Infrastructure.Images;
@@ -47,7 +48,14 @@ public sealed class VipsImageProcessor(long maxPixels = VipsImageProcessor.Defau
     private static async Task<byte[]> ReadAllAsync(Stream input, CancellationToken ct)
     {
         using var buffer = new MemoryStream();
-        await input.CopyToAsync(buffer, ct);
+        var chunk = new byte[81920];
+        int read;
+        while ((read = await input.ReadAsync(chunk, ct)) > 0)
+        {
+            if (buffer.Length + read > UploadProductImageValidator.MaxBytes)
+                throw RequestValidationException.For("file", "A imagem deve ter no máximo 10 MB.");
+            buffer.Write(chunk, 0, read);
+        }
         return buffer.ToArray();
     }
 
