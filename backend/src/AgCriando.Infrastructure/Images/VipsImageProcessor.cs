@@ -1,14 +1,17 @@
+using System.Buffers;
 using AgCriando.Application.Common;
-using AgCriando.Application.Uploads.Commands;
 using NetVips;
 
 namespace AgCriando.Infrastructure.Images;
 
-public sealed class VipsImageProcessor(long maxPixels = VipsImageProcessor.DefaultMaxPixels) : IImageProcessor
+public sealed class VipsImageProcessor(
+    long maxPixels = VipsImageProcessor.DefaultMaxPixels,
+    long maxBytes = VipsImageProcessor.DefaultMaxBytes) : IImageProcessor
 {
     public const int MaxDimension = 1200;
     public const int Quality = 82;
     public const long DefaultMaxPixels = 50_000_000;
+    public const long DefaultMaxBytes = 10 * 1024 * 1024;
 
     // O content-type vem do cliente; o formato real é conferido pelo loader que a libvips escolheu.
     private static readonly string[] AllowedLoaders = ["jpegload_buffer", "pngload_buffer", "webpload_buffer"];
@@ -45,22 +48,35 @@ public sealed class VipsImageProcessor(long maxPixels = VipsImageProcessor.Defau
         }
     }
 
-    private static async Task<byte[]> ReadAllAsync(Stream input, CancellationToken ct)
+    // Defesa para quem chama sem validar antes: um stream sem Length conhecido é lido em blocos até o limite.
+    private async Task<byte[]> ReadAllAsync(Stream input, CancellationToken ct)
     {
-        using var buffer = new MemoryStream();
-        var chunk = new byte[81920];
-        int read;
-        while ((read = await input.ReadAsync(chunk, ct)) > 0)
+        var known = input.CanSeek ? input.Length - input.Position : (long?)null;
+        if (known > maxBytes) throw TooHeavy();
+
+        using var buffer = new MemoryStream((int)(known ?? 0));
+        var chunk = ArrayPool<byte>.Shared.Rent(81920);
+        try
         {
-            if (buffer.Length + read > UploadProductImageValidator.MaxBytes)
-                throw RequestValidationException.For("file", "A imagem deve ter no máximo 10 MB.");
-            buffer.Write(chunk, 0, read);
+            int read;
+            while ((read = await input.ReadAsync(chunk, ct)) > 0)
+            {
+                if (buffer.Length + read > maxBytes) throw TooHeavy();
+                buffer.Write(chunk, 0, read);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(chunk);
         }
         return buffer.ToArray();
     }
 
     private static RequestValidationException Unreadable() =>
         RequestValidationException.For("file", "Não foi possível ler a imagem.");
+
+    private RequestValidationException TooHeavy() =>
+        RequestValidationException.For("file", $"A imagem deve ter no máximo {maxBytes / (1024 * 1024)} MB.");
 
     private static RequestValidationException TooLarge() =>
         RequestValidationException.For("file", "A imagem é grande demais. Use uma foto de até 50 megapixels.");

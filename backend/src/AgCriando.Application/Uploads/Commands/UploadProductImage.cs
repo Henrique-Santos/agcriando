@@ -13,6 +13,7 @@ public sealed class UploadProductImageValidator : AbstractValidator<UploadProduc
 {
     public static readonly string[] AllowedContentTypes = ["image/jpeg", "image/png", "image/webp"];
     public const long MaxBytes = 10 * 1024 * 1024;
+    public static readonly string TooHeavyMessage = $"A imagem deve ter no máximo {MaxBytes / (1024 * 1024)} MB.";
 
     public UploadProductImageValidator()
     {
@@ -22,7 +23,7 @@ public sealed class UploadProductImageValidator : AbstractValidator<UploadProduc
             .OverridePropertyName("file");
         RuleFor(x => x.Length)
             .GreaterThan(0).WithMessage("O arquivo está vazio.")
-            .LessThanOrEqualTo(MaxBytes).WithMessage("A imagem deve ter no máximo 10 MB.")
+            .LessThanOrEqualTo(MaxBytes).WithMessage(TooHeavyMessage)
             .OverridePropertyName("file");
     }
 }
