@@ -1,4 +1,5 @@
 import { ArrowRight, InstagramLogo } from '@phosphor-icons/react/ssr';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CategoryGrid } from '@/components/loja/CategoryGrid';
@@ -11,7 +12,17 @@ import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/config';
 import { STEPS } from '@/lib/content';
 
 const sectionTitle = 'text-[clamp(28px,3.4vw,40px)]';
-const showcase = ['caderno-girassois.jpeg', 'quadro-familia.jpeg', 'ecobag.jpeg', 'botton-jw.jpeg'];
+const showcase = [
+  { file: 'caderno-girassois.jpeg', alt: 'Caderno personalizado com capa de girassóis' },
+  { file: 'quadro-familia.jpeg', alt: 'Quadro decorativo personalizado de família' },
+  { file: 'ecobag.jpeg', alt: 'Ecobag personalizada' },
+  { file: 'botton-jw.jpeg', alt: 'Bottons personalizados para evento' },
+];
+
+export const metadata: Metadata = {
+  title: { absolute: 'Presentes e papelaria personalizados em Joinville (SC) — AG Criando' },
+  alternates: { canonical: '/' },
+};
 
 export default async function HomePage() {
   const catalog = await getCatalog();
@@ -20,7 +31,7 @@ export default async function HomePage() {
     <>
       <section className="flex min-h-[calc(100svh-80px)] flex-wrap content-center items-center justify-between gap-x-8 gap-y-4 pb-6 pt-4">
         <div className="order-2 min-w-0 max-w-[780px] flex-[1_1_520px] narrow:order-none">
-          <p className="mb-4 text-[clamp(12px,1.8vh,15px)] uppercase tracking-[0.16em] text-accent-700">Papelaria e presentes personalizados</p>
+          <p className="mb-4 text-[clamp(12px,1.8vh,15px)] uppercase tracking-[0.16em] text-accent-700">Papelaria e presentes personalizados em Joinville</p>
           <h1 className="mb-6 text-balance text-[clamp(40px,min(7.4vw,10.5vh),112px)] leading-[1.02] tracking-[-0.025em]">
             Presentes com o nome de quem <span className="text-accent">você ama.</span>
           </h1>
@@ -76,8 +87,8 @@ export default async function HomePage() {
           </a>
         </div>
         <div className="grid flex-[2_1_420px] grid-cols-4 gap-2">
-          {showcase.map((file) => (
-            <Image key={file} src={`/img/${file}`} alt="" width={300} height={300} className="aspect-square w-full rounded-md object-cover" />
+          {showcase.map(({ file, alt }) => (
+            <Image key={file} src={`/img/${file}`} alt={alt} width={300} height={300} className="aspect-square w-full rounded-md object-cover" />
           ))}
         </div>
       </section>

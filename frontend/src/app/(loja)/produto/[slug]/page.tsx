@@ -6,11 +6,13 @@ import { notFound } from 'next/navigation';
 import { ProductCard } from '@/components/loja/ProductCard';
 import { ProductForm } from '@/components/loja/ProductForm';
 import { ProductGrid } from '@/components/loja/ProductGrid';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { NoPhoto } from '@/components/ui/NoPhoto';
 import { getCatalog } from '@/lib/api/server';
 import { categoryLabel, priceLabel, relatedProducts } from '@/lib/catalog';
-import { SITE_URL } from '@/lib/config';
+import { SITE_URL, STORE } from '@/lib/config';
 import { brl } from '@/lib/format';
+import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -24,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { product } = await load(slug);
   if (!product) return { title: 'Produto não encontrado' };
 
-  const description = `${priceLabel(product)} · ${product.description}`.slice(0, 200);
+  const description = `${priceLabel(product)} · ${product.description} Feito sob encomenda em ${STORE.city} (${STORE.state}).`.slice(0, 200);
   return {
     title: product.name,
     description,
@@ -45,25 +47,16 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const label = categoryLabel(catalog, product.categoryId);
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    description: product.description,
-    image: product.imageUrl ?? undefined,
-    category: label,
-    offers: {
-      '@type': 'Offer',
-      price: product.price.toFixed(2),
-      priceCurrency: 'BRL',
-      availability: 'https://schema.org/InStock',
-      url: `${SITE_URL}/produto/${product.id}`,
-    },
-  };
+  const breadcrumb = breadcrumbJsonLd(SITE_URL, [
+    { name: 'Catálogo', path: '/catalogo' },
+    { name: label, path: `/catalogo/${product.categoryId}` },
+    { name: product.name, path: `/produto/${product.id}` },
+  ]);
 
   return (
     <section className="pb-24 pt-6">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      <JsonLd data={productJsonLd(SITE_URL, product, label)} />
+      <JsonLd data={breadcrumb} />
       <nav aria-label="Navegação estrutural" className="mb-6 flex items-center gap-2 text-sm text-neutral-700">
         <Link href="/catalogo">Catálogo</Link>
         <span>/</span>
