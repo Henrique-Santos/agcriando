@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/config';
 
-export const metadata: Metadata = { title: 'Sobre', description: 'Feito à mão, pensado para alguém.' };
+export const metadata: Metadata = { title: 'Sobre a loja', description: 'A AG Criando cria papelaria e presentes personalizados sob encomenda em Joinville (SC). Feito à mão, pensado para alguém.' };
 
 const paragraph = 'mb-4 text-pretty text-[19px] leading-[1.65]';
 
@@ -16,7 +16,7 @@ export default function AboutPage() {
         <h1 className="mb-6 text-[clamp(40px,6vw,68px)] leading-[1.05] tracking-[-0.03em]">
           Feito à mão, <span className="font-normal italic">pensado para alguém.</span>
         </h1>
-        <p className={paragraph}>A AG Criando nasceu do gosto por transformar papel, tinta e pequenas ideias em presentes que emocionam. Cada caderno, caneca ou botton é criado sob encomenda, com o nome, a frase ou o tema que você escolher.</p>
+        <p className={paragraph}>A AG Criando é uma loja de personalizados de Joinville (SC) que nasceu do gosto por transformar papel, tinta e pequenas ideias em presentes que emocionam. Cada caderno, caneca ou botton é criado sob encomenda, com o nome, a frase ou o tema que você escolher.</p>
         <p className={paragraph}>Gostamos de detalhes: a flor certa na capa, a cor que a pessoa ama, o acabamento que faz durar. É um trabalho pequeno, feito com calma — e é justamente isso que torna cada peça única.</p>
         <p className={`${paragraph} mb-6`}>Atendemos pedidos individuais e lembrancinhas em quantidade para congressos, escolas, aniversários e datas especiais.</p>
         <div className="flex flex-wrap gap-2">

@@ -4,8 +4,8 @@ import { CatalogBrowser } from '@/components/loja/CatalogBrowser';
 import { getCatalog } from '@/lib/api/server';
 
 export const metadata: Metadata = {
-  title: 'Catálogo',
-  description: 'Cadernos, canecas, bottons, adesivos, lembrancinhas e mais — escolha, personalize e peça pelo WhatsApp.',
+  title: 'Catálogo de personalizados em Joinville',
+  description: 'Cadernos, canecas, bottons, adesivos, lembrancinhas e mais, personalizados em Joinville (SC) — escolha, personalize e peça pelo WhatsApp.',
   alternates: { canonical: '/catalogo' },
 };
 

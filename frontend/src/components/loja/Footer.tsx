@@ -17,7 +17,7 @@ export function Footer() {
             <Image src="/img/logo.png" alt="" width={64} height={64} className="size-[64px] rounded-full object-cover" />
             <Image src="/img/nome.png" alt="AG criando" width={137} height={40} className="h-[40px] w-auto" />
           </div>
-          <p className="text-[15px] text-neutral-800">Papelaria e presentes personalizados, feitos um a um com carinho.</p>
+          <p className="text-[15px] text-neutral-800">Papelaria e presentes personalizados, feitos um a um com carinho em Joinville (SC).</p>
         </div>
         <div className="flex flex-[0_1_180px] flex-col gap-2">
           <span className={heading}>Loja</span>
