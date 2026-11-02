@@ -1,4 +1,5 @@
 using AgCriando.Application.Common;
+using AgCriando.Application.Uploads.Commands;
 using AgCriando.Infrastructure.Images;
 using NetVips;
 using Shouldly;
@@ -92,5 +93,15 @@ public sealed class VipsImageProcessorTests
         var ex = await Should.ThrowAsync<RequestValidationException>(() =>
             _processor.ProcessAsync(new MemoryStream("isto não é uma imagem"u8.ToArray()), Ct));
         ex.Errors["file"].ShouldBe(["Não foi possível ler a imagem."]);
+    }
+
+    [Fact]
+    public async Task Stream_larger_than_upload_limit_is_rejected_while_reading()
+    {
+        using var input = new MemoryStream(new byte[UploadProductImageValidator.MaxBytes + 1]);
+
+        var ex = await Should.ThrowAsync<RequestValidationException>(() => _processor.ProcessAsync(input, Ct));
+
+        ex.Errors["file"].ShouldBe(["A imagem deve ter no máximo 10 MB."]);
     }
 }
