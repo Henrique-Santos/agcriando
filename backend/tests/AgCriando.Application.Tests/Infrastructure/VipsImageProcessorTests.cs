@@ -1,5 +1,4 @@
 using AgCriando.Application.Common;
-using AgCriando.Application.Uploads.Commands;
 using AgCriando.Infrastructure.Images;
 using NetVips;
 using Shouldly;
@@ -96,12 +95,55 @@ public sealed class VipsImageProcessorTests
     }
 
     [Fact]
-    public async Task Stream_larger_than_upload_limit_is_rejected_while_reading()
+    public async Task Stream_above_byte_limit_is_rejected_before_reading()
     {
-        using var input = new MemoryStream(new byte[UploadProductImageValidator.MaxBytes + 1]);
+        var processor = new VipsImageProcessor(maxBytes: 1024 * 1024);
 
-        var ex = await Should.ThrowAsync<RequestValidationException>(() => _processor.ProcessAsync(input, Ct));
+        var ex = await Should.ThrowAsync<RequestValidationException>(() =>
+            processor.ProcessAsync(new MemoryStream(new byte[1024 * 1024 + 1]), Ct));
 
-        ex.Errors["file"].ShouldBe(["A imagem deve ter no máximo 10 MB."]);
+        ex.Errors["file"].ShouldBe(["A imagem deve ter no máximo 1 MB."]);
+    }
+
+    [Fact]
+    public async Task Non_seekable_stream_above_byte_limit_is_rejected_while_reading()
+    {
+        var processor = new VipsImageProcessor(maxBytes: 1024 * 1024);
+        using var input = new NonSeekableStream(new MemoryStream(new byte[1024 * 1024 + 1]));
+
+        var ex = await Should.ThrowAsync<RequestValidationException>(() => processor.ProcessAsync(input, Ct));
+
+        ex.Errors["file"].ShouldBe(["A imagem deve ter no máximo 1 MB."]);
+    }
+
+    [Fact]
+    public async Task Non_seekable_stream_within_byte_limit_is_processed()
+    {
+        using var input = new NonSeekableStream(Jpeg(200, 100));
+
+        var result = await _processor.ProcessAsync(input, Ct);
+
+        result.ContentType.ShouldBe("image/webp");
+    }
+
+    // Simula o corpo de uma requisição: sem Length nem Seek.
+    private sealed class NonSeekableStream(Stream inner) : Stream
+    {
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override int Read(byte[] buffer, int offset, int count) => inner.Read(buffer, offset, count);
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) inner.Dispose();
+            base.Dispose(disposing);
+        }
     }
 }

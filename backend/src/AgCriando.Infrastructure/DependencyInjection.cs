@@ -1,4 +1,5 @@
 using AgCriando.Application.Common;
+using AgCriando.Application.Uploads.Commands;
 using AgCriando.Infrastructure.Caching;
 using AgCriando.Infrastructure.Identity;
 using AgCriando.Infrastructure.Images;
@@ -49,7 +50,7 @@ public static class DependencyInjection
         services.AddHttpClient<ICatalogCacheInvalidator, HttpCatalogCacheInvalidator>(client => client.Timeout = TimeSpan.FromSeconds(5));
 
         services.AddOptions<StorageOptions>().BindConfiguration(StorageOptions.Section);
-        services.AddSingleton<IImageProcessor>(_ => new VipsImageProcessor());
+        services.AddSingleton<IImageProcessor>(_ => new VipsImageProcessor(maxBytes: UploadProductImageValidator.MaxBytes));
         services.AddSingleton<IImageStorage>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<StorageOptions>>();
